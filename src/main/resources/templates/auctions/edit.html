@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+  <title>Edit Auction - Auctions</title>
+</head>
+
+<body>
+  <main>
+    <style>
+      .edit-auction-wrapper {
+        background: linear-gradient(135deg, #0d6efd20 0%, #0d6efd05 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .auction-form-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        overflow: hidden;
+      }
+
+      .auction-form-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);
+        padding: 2rem;
+        text-align: center;
+        color: white;
+      }
+
+      .auction-form-body {
+        padding: 2.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 2rem;
+        position: relative;
+      }
+
+      .form-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #495057;
+      }
+
+      .form-control {
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+        background-color: #f8f9fa;
+      }
+
+      .form-select {
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+        background-color: #f8f9fa;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+        background-color: white;
+      }
+
+      .form-control:disabled {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+      }
+
+      .form-control.is-invalid {
+        border-color: #dc3545;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1.5rem 1.5rem;
+      }
+
+      .form-control.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+      }
+
+      .image-preview {
+        width: 100%;
+        height: 200px;
+        border-radius: 10px;
+        border: 2px dashed #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0.5rem;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .image-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      .image-preview.empty {
+        background: #f8f9fa;
+      }
+
+      .btn-auction {
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+      }
+
+      .btn-auction:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+      }
+
+      .text-danger {
+        color: #dc3545 !important;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        background-color: rgba(220, 53, 69, 0.1);
+        border-radius: 8px;
+        border-left: 4px solid #dc3545;
+      }
+
+      .text-danger i {
+        font-size: 1rem;
+        flex-shrink: 0;
+      }
+
+      .current-image {
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .current-image img {
+        max-width: 200px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .helper-note {
+        margin-top: 0.75rem;
+        border-radius: 12px;
+        padding: 0.85rem 1rem;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1d4ed8;
+        font-size: 0.9rem;
+      }
+
+      .warning-note {
+        margin-top: 0.75rem;
+        border-radius: 12px;
+        padding: 0.85rem 1rem;
+        background: #fff7ed;
+        border: 1px solid #fdba74;
+        color: #c2410c;
+        font-size: 0.9rem;
+      }
+    </style>
+
+    <div class="edit-auction-wrapper">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="auction-form-card">
+            <div class="auction-form-header">
+              <div class="d-flex justify-content-start mb-3">
+                <a href="/auctions" class="btn btn-outline-light">
+                  <i class="bi bi-arrow-left me-2"></i>Back to My Auctions
+                </a>
+              </div>
+              <h2 class="mb-2">Edit Auction</h2>
+              <p class="mb-0 text-white-50">Update your auction listing details</p>
+            </div>
+
+            <div class="auction-form-body">
+              <form th:action="@{/auctions/edit/{id}(id=${auction.id})}" th:object="${auction}" method="post"
+                enctype="multipart/form-data">
+                <input type="hidden" th:field="*{id}" />
+                <input type="hidden" th:field="*{status}" />
+                <input type="hidden" th:field="*{seller}" />
+                <input type="hidden" th:field="*{createdAt}" />
+                <input type="hidden" th:field="*{image}" />
+
+                <!-- Product Name -->
+                <div class="form-group">
+                  <label for="productName" class="form-label">
+                    <i class="bi bi-tag text-primary"></i>
+                    Product Name
+                  </label>
+                  <input type="text" class="form-control"
+                    th:classappend="${#fields.hasErrors('productName')} ? 'is-invalid'" id="productName"
+                    th:field="*{productName}" required />
+                  <div class="text-danger" th:if="${#fields.hasErrors('productName')}">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span th:errors="*{productName}"></span>
+                  </div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                  <label for="description" class="form-label">
+                    <i class="bi bi-file-text text-primary"></i>
+                    Description
+                  </label>
+                  <textarea class="form-control" th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'"
+                    id="description" th:field="*{description}" rows="4" required></textarea>
+                  <div class="text-danger" th:if="${#fields.hasErrors('description')}">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span th:errors="*{description}"></span>
+                  </div>
+                </div>
+
+                <!-- Starting Price -->
+                <div class="form-group">
+                  <label for="startingPrice" class="form-label">
+                    <i class="bi bi-currency-dollar text-primary"></i>
+                    Starting Price
+                  </label>
+                  <input type="number" class="form-control"
+                    th:classappend="${#fields.hasErrors('startingPrice')} ? 'is-invalid'" id="startingPrice"
+                    th:field="*{startingPrice}" min="0" step="0.01" required />
+                  <div class="text-danger" th:if="${#fields.hasErrors('startingPrice')}">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span th:errors="*{startingPrice}"></span>
+                  </div>
+                </div>
+
+                <!-- End Time -->
+                <div class="form-group">
+                  <label for="endTime" class="form-label">
+                    <i class="bi bi-clock text-primary"></i>
+                    End Time
+                  </label>
+                  <input type="datetime-local" class="form-control"
+                    th:classappend="${#fields.hasErrors('endTime')} ? 'is-invalid'" id="endTime" th:field="*{endTime}"
+                    required />
+                  <div id="publishTimeWarning" class="warning-note"
+                    th:style="${draftEndTimeExpired} ? 'display:block;' : 'display:none;'">
+                    This draft end time has already passed. Choose a new future end time before publishing.
+                  </div>
+                  <div class="text-danger" th:if="${#fields.hasErrors('endTime')}">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span th:errors="*{endTime}"></span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="visibility" class="form-label">
+                    <i class="bi bi-diagram-3 text-primary"></i>
+                    Auction Type
+                  </label>
+                  <select id="visibility" class="form-select"
+                    th:classappend="${#fields.hasErrors('visibility')} ? 'is-invalid'" th:field="*{visibility}">
+                    <option value="PUBLIC">Public Auction</option>
+                    <option value="PRIVATE">Private Auction</option>
+                  </select>
+  
+                </div>
+
+                <div class="form-group" id="accessCodeGroup">
+                  <label for="accessCode" class="form-label">
+                    <i class="bi bi-key text-primary"></i>
+                    Private Access Code
+                  </label>
+                  <input type="password" class="form-control"
+                    th:classappend="${#fields.hasErrors('accessCode')} ? 'is-invalid'" id="accessCode"
+                    th:field="*{accessCode}" autocomplete="new-password"
+                    placeholder="Leave blank to keep the current private code" />
+
+                  <div class="text-danger" th:if="${#fields.hasErrors('accessCode')}">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span th:errors="*{accessCode}"></span>
+                  </div>
+                </div>
+
+                <!-- Current Image -->
+                <div class="form-group" th:if="${auction.image != null}">
+                  <label class="form-label">
+                    <i class="bi bi-image text-primary"></i>
+                    Current Image
+                  </label>
+                  <div class="current-image">
+                    <img th:if="${auction.image}" th:src="@{'/images/auctions/' + ${auction.image}}"
+                      alt="Current product image" />
+                  </div>
+                </div>
+
+                <!-- New Image Upload -->
+                <div class="form-group">
+                  <label for="imageFile" class="form-label">
+                    <i class="bi bi-cloud-upload text-primary"></i>
+                    <span th:if="${auction.image}">Upload New Image (Optional)</span>
+                    <span th:unless="${auction.image}">Upload Image</span>
+                  </label>
+                  <input type="file" class="form-control"
+                    th:classappend="${#fields.hasErrors('imageFile')} ? 'is-invalid'" id="imageFile" name="imageFile"
+                    accept="image/*" />
+                  <div class="image-preview empty mt-3" id="imagePreview">
+                    <i class="bi bi-cloud-upload fs-1 text-muted"></i>
+                  </div>
+                  <div class="text-danger" th:if="${#fields.hasErrors('imageFile')}">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span th:errors="*{imageFile}"></span>
+                  </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                  <!-- Update button -->
+                  <button type="submit" name="action" value="update" class="btn btn-primary btn-auction flex-grow-1"><i
+                      class="bi bi-check-lg me-2"></i>Save Changes</button>
+
+                  <!-- Publish button (only for DRAFT) -->
+                  <button th:if="${auction.status.name() == 'DRAFT'}" id="publishButton" type="submit" name="action"
+                    value="publish" class="btn btn-success btn-auction flex-grow-1">
+                    <i class="bi bi-check-circle me-2"></i>Publish Auction
+                  </button>
+
+                  <!-- Delete button (only for DRAFT) -->
+                  <button th:if="${auction.status.name() == 'DRAFT'}" type="submit" name="action" value="delete"
+                    class="btn btn-danger btn-auction flex-grow-1">
+                    <i class="bi bi-trash me-2"></i>Delete Draft
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Preview Script -->
+    <script>
+      const visibilityField = document.getElementById('visibility');
+      const accessCodeGroup = document.getElementById('accessCodeGroup');
+      const accessCodeField = document.getElementById('accessCode');
+      const endTimeField = document.getElementById('endTime');
+      const publishButton = document.getElementById('publishButton');
+      const publishTimeWarning = document.getElementById('publishTimeWarning');
+
+      function syncAccessCodeVisibility() {
+        const isPrivateAuction = visibilityField.value === 'PRIVATE';
+        accessCodeGroup.style.display = isPrivateAuction ? 'block' : 'none';
+        accessCodeField.required = false;
+        if (!isPrivateAuction) {
+          accessCodeField.value = '';
+        }
+      }
+
+      visibilityField.addEventListener('change', syncAccessCodeVisibility);
+      syncAccessCodeVisibility();
+
+      function syncPublishAvailability() {
+        if (!endTimeField || !publishButton || !publishTimeWarning) {
+          return;
+        }
+
+        const selectedValue = endTimeField.value;
+        const hasFutureEndTime = selectedValue && new Date(selectedValue).getTime() > Date.now();
+        publishButton.disabled = !hasFutureEndTime;
+        publishTimeWarning.style.display = hasFutureEndTime ? 'none' : 'block';
+      }
+
+      endTimeField.addEventListener('input', syncPublishAvailability);
+      syncPublishAvailability();
+
+      document.getElementById('imageFile').addEventListener('change', function (e) {
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = '';
+        preview.classList.remove('empty');
+
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            preview.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          preview.classList.add('empty');
+          preview.innerHTML = '<i class="bi bi-cloud-upload fs-1 text-muted"></i>';
+        }
+      });
+    </script>
+  </main>
+</body>
+
+</html>

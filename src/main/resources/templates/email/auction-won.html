@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Congratulations! You've Won the Auction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #28a745;
+        }
+
+        .auction-details {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+
+        .meta-item {
+            margin-bottom: 10px;
+        }
+
+        .meta-label {
+            font-weight: bold;
+            color: #666;
+        }
+
+        .next-steps {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🎉 Congratulations!</h1>
+        <h2>You've Won the Auction</h2>
+    </div>
+
+    <div class="auction-details">
+        <h3>Auction Details</h3>
+        <div class="meta-item">
+            <span class="meta-label">Item:</span>
+            <span th:text="${auction.productName}">Product Name</span>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Final Price:</span>
+            <span th:text="${#numbers.formatInteger(auction.currentPrice, 0, 'POINT') + ' VNĐ'}">0 VNĐ</span>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Seller:</span>
+            <span th:text="${seller.fullName}">Seller Name</span>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">End Time:</span>
+            <span th:text="${#temporals.format(auction.endTime, 'dd/MM/yyyy HH:mm')}">End Time</span>
+        </div>
+    </div>
+
+    <div class="next-steps">
+        <h3>Next Steps</h3>
+        <ol>
+            <li>Review the auction details above</li>
+            <li>Make sure your wallet has enough balance</li>
+            <li>Click the button below to pay with your virtual wallet</li>
+            <li>Once payment is complete, the seller will be notified</li>
+            <li>The seller will contact you regarding delivery arrangements</li>
+        </ol>
+        <a th:href="@{${baseUrl} + '/transactions/create/' + ${auction.id}}" class="button">
+            Pay with Virtual Wallet
+        </a>
+    </div>
+
+    <div class="footer">
+        <p>Thank you for participating in our auction platform!</p>
+        <p>If you have any questions, please contact us at support@auctions.com</p>
+    </div>
+</body>
+
+</html>

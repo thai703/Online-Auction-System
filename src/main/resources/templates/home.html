@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+  <title>Welcome to Auctions</title>
+</head>
+
+<body>
+  <main>
+    <style>
+      .hero-section {
+        background: linear-gradient(135deg, #0d6efd10 0%, #0099ff05 100%);
+        border-radius: 0 0 80px 80px;
+        padding: 8rem 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-image-container {
+        position: relative;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+        border-radius: 30px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        animation: float 6s ease-in-out infinite;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: fit-content;
+        margin: 0 auto;
+      }
+
+      .hero-image-container::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        background: linear-gradient(135deg, #0d6efd20 0%, #00c6ff20 100%);
+        border-radius: 40px;
+        z-index: -1;
+      }
+
+      .hero-image-container img {
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+      }
+
+      .hero-image-container:hover img {
+        transform: scale(1.02);
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0px);
+        }
+
+        50% {
+          transform: translateY(-10px);
+        }
+
+        100% {
+          transform: translateY(0px);
+        }
+      }
+
+      .hero-title {
+        font-size: 4rem;
+        font-weight: 800;
+        background: linear-gradient(45deg, #0d6efd, #00c6ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1.5rem;
+        animation: fadeInUp 1s ease;
+      }
+
+      .hero-subtitle {
+        font-size: 1.25rem;
+        color: #4a5568;
+        line-height: 1.8;
+        margin-bottom: 2rem;
+        animation: fadeInUp 1s ease 0.2s;
+        opacity: 0;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        transition: all 0.3s ease;
+        border: 2px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #0d6efd 0%, #00c6ff 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border-color: #0d6efd;
+      }
+
+      .feature-card:hover::before {
+        opacity: 1;
+      }
+
+      .icon-square {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #0d6efd 0%, #00c6ff 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .icon-square::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+      }
+
+      .stats-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        padding: 6rem 0;
+        border-radius: 80px;
+        margin: 4rem 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stats-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="%230d6efd05"/></svg>') repeat;
+        opacity: 0.5;
+      }
+
+      .stat-card {
+        text-align: center;
+        padding: 2rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(45deg, #0d6efd, #00c6ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+      }
+
+      .cta-section {
+        background: linear-gradient(135deg, #0d6efd 0%, #00c6ff 100%);
+        color: white;
+        padding: 6rem 0;
+        border-radius: 80px;
+        margin: 4rem 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .cta-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="%23FFFFFF10"/></svg>') repeat;
+        opacity: 0.2;
+      }
+
+      .btn-hero {
+        padding: 1rem 2.5rem;
+        font-weight: 600;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .btn-hero.btn-primary {
+        background: linear-gradient(135deg, #0d6efd 0%, #00c6ff 100%);
+        border: none;
+        box-shadow: 0 10px 20px rgba(13, 110, 253, 0.2);
+      }
+
+      .btn-hero.btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(13, 110, 253, 0.3);
+      }
+
+      .btn-hero.btn-outline-primary {
+        border: 2px solid #0d6efd;
+        background: transparent;
+      }
+
+      .btn-hero.btn-outline-primary:hover {
+        background: linear-gradient(135deg, #0d6efd 0%, #00c6ff 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+      }
+
+      .testimonial-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border: 2px solid #e2e8f0;
+      }
+
+      .testimonial-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border-color: #0d6efd;
+      }
+
+      .testimonial-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        object-fit: cover;
+        border: 4px solid #e2e8f0;
+        transition: all 0.3s ease;
+      }
+
+      .testimonial-card:hover .testimonial-avatar {
+        border-color: #0d6efd;
+      }
+
+      .section-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        text-align: center;
+        margin-bottom: 3rem;
+        background: linear-gradient(45deg, #0d6efd, #00c6ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      @media (max-width: 768px) {
+        .hero-section {
+          padding: 4rem 0;
+          text-align: center;
+        }
+
+        .hero-title {
+          font-size: 2.5rem;
+        }
+
+        .stat-number {
+          font-size: 2rem;
+        }
+
+        .section-title {
+          font-size: 2rem;
+        }
+      }
+    </style>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-6">
+            <h1 class="hero-title">Discover Amazing Auctions</h1>
+            <p class="hero-subtitle">Join our thriving marketplace where unique items find their perfect match.
+              Experience the thrill of bidding and selling in a secure, modern platform.</p>
+            <div class="d-grid gap-3 d-sm-flex">
+              <a sec:authorize="!isAuthenticated()" href="/register" class="btn btn-hero btn-primary">
+                <i class="bi bi-person-plus me-2"></i>Get Started
+              </a>
+              <a sec:authorize="!isAuthenticated()" href="/login" class="btn btn-hero btn-outline-primary">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+              </a>
+              <a sec:authorize="isAuthenticated()" href="/dashboard" class="btn btn-hero btn-primary">
+                <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-6 d-none d-lg-block">
+            <div class="hero-image-container">
+              <img th:src="@{/images/auction.png}" class="img-fluid" alt="Auction Illustration" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+
+</html>

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+  <title>Auction Detail - Admin</title>
+</head>
+
+<body>
+  <main>
+    <style>
+      .admin-page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1rem 2rem;
+      }
+
+      .page-header {
+        background: linear-gradient(135deg, #2563eb20 0%, #2563eb05 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .page-header h1 {
+        color: #1e40af;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .page-header p {
+        color: #64748b;
+        margin-bottom: 0;
+      }
+
+      .surface-card {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      .surface-card+.surface-card {
+        margin-top: 1.5rem;
+      }
+
+      .section-header {
+        padding: 1.5rem;
+        border-bottom: 2px solid #e2e8f0;
+        background: #f8fafc;
+      }
+
+      .section-header h3 {
+        color: #1e40af;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .card-body-pad {
+        padding: 1.5rem;
+      }
+
+      .metric-card {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 1.25rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        height: 100%;
+      }
+
+      .metric-label {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .metric-value {
+        color: #0f172a;
+        font-size: 1.6rem;
+        font-weight: 700;
+      }
+
+      .badge-soft {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 0.35rem 0.8rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .badge-status-draft {
+        background: #e2e8f0;
+        color: #475569;
+      }
+
+      .badge-status-active {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .badge-status-ended {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+
+      .badge-status-cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .badge-visibility-public {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+
+      .badge-visibility-private {
+        background: #ede9fe;
+        color: #6d28d9;
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+      }
+
+      .meta-item {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+      }
+
+      .meta-item .label {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-bottom: 0.35rem;
+      }
+
+      .meta-item .value {
+        color: #0f172a;
+        font-weight: 600;
+      }
+
+      .description-box {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        border: 1px solid #e2e8f0;
+        white-space: pre-line;
+        color: #334155;
+      }
+
+      .notice-panel {
+        background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+        border: 1px solid #dbeafe;
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        color: #334155;
+      }
+
+      .notice-panel.cancelled {
+        background: linear-gradient(135deg, #fff1f2 0%, #fff7ed 100%);
+        border-color: #fecaca;
+      }
+
+      .notice-title {
+        color: #1e40af;
+        font-weight: 700;
+        margin-bottom: 0.35rem;
+      }
+
+      .notice-panel.cancelled .notice-title {
+        color: #b91c1c;
+      }
+
+      .table tbody td {
+        vertical-align: middle;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 2.5rem 1.5rem;
+        color: #64748b;
+      }
+
+      .btn-admin {
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.75rem 1.25rem;
+      }
+
+      .live-status {
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .live-status.connected {
+        color: #15803d;
+      }
+
+      .live-status.refreshing {
+        color: #1d4ed8;
+      }
+
+      .live-status.disconnected {
+        color: #b45309;
+      }
+
+      .meta-item-img {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #f1f5f9;
+        border: 2px dashed #cbd5e1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+      }
+
+      .meta-item-img:hover {
+        transform: translateY(-2px);
+        border-color: #2563eb;
+        background: #eff6ff;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+      }
+
+      .preview-thumb {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+      }
+
+      @media (max-width: 768px) {
+
+        .page-header,
+        .section-header,
+        .card-body-pad {
+          padding: 1rem;
+        }
+      }
+    </style>
+
+    <div class="admin-page">
+      <div class="page-header">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+          <div>
+            <a th:href="${backUrl}" class="btn btn-outline-primary btn-admin mb-3">
+              <i class="bi bi-arrow-left me-2"></i>Back to Admin Auctions
+            </a>
+            <h1 th:text="${detail.auction.productName}">Auction Detail</h1>
+            <p>Moderation view focused on listing state, seller context, and bid history.</p>
+            <div id="liveStatus" th:if="${detail.auction.status.name() == 'ACTIVE'}" class="live-status mt-3">
+              Connecting live updates...
+            </div>
+          </div>
+          <div class="d-flex flex-column align-items-lg-end gap-2">
+            <div class="d-flex gap-2 flex-wrap justify-content-lg-end">
+              <span th:class="'badge-soft badge-status-' + ${#strings.toLowerCase(detail.auction.status.name())}"
+                th:text="${detail.auction.status}">STATUS</span>
+              <span
+                th:class="'badge-soft badge-visibility-' + ${#strings.toLowerCase(detail.auction.visibility.name())}">
+                <i
+                  th:class="${detail.auction.visibility.name() == 'PRIVATE'} ? 'bi bi-lock-fill me-1' : 'bi bi-globe2 me-1'"></i>
+                <span th:text="${detail.auction.visibility}">PUBLIC</span>
+              </span>
+            </div>
+            <form th:if="${detail.auction.status == T(com.example.auctions.model.AuctionStatus).ACTIVE}"
+              th:action="@{'/admin/auctions/' + ${detail.auction.id} + '/cancel'}" method="post">
+              <input type="hidden" name="page" th:value="${currentPage}" />
+              <input type="hidden" name="keyword" th:value="${currentKeyword}" />
+              <input type="hidden" name="status" th:value="${currentStatus}" />
+              <button type="submit" class="btn btn-outline-warning btn-admin">
+                <i class="bi bi-x-octagon me-2"></i>Cancel Auction
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="metric-card">
+            <div class="metric-label">Starting Price</div>
+            <div class="metric-value"
+              th:text="${#numbers.formatInteger(detail.auction.startingPrice, 0, 'POINT') + ' VNĐ'}">0 VNĐ</div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="metric-card">
+            <div class="metric-label">Current Price</div>
+            <div class="metric-value"
+              th:text="${#numbers.formatInteger(detail.auction.currentPrice != null ? detail.auction.currentPrice : detail.auction.startingPrice, 0, 'POINT') + ' VNĐ'}">
+              0 VNĐ</div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="metric-card">
+            <div class="metric-label">Highest Bid</div>
+            <div class="metric-value" th:text="${#numbers.formatInteger(detail.highestBidAmount, 0, 'POINT') + ' VNĐ'}">
+              0 VNĐ</div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="metric-card">
+            <div class="metric-label">Total Bids</div>
+            <div class="metric-value" th:text="${detail.totalBids}">0</div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="metric-card">
+            <div class="metric-label">Unique Bidders</div>
+            <div class="metric-value" th:text="${detail.uniqueBidders}">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="surface-card">
+        <div class="section-header">
+          <h3>Auction Summary</h3>
+        </div>
+        <div class="card-body-pad">
+          <div class="meta-grid mb-4">
+            <div class="meta-item">
+              <div class="label">Auction ID</div>
+              <div class="value" th:text="${detail.auction.id}">1</div>
+            </div>
+            <div class="meta-item meta-item-img" data-bs-toggle="modal" data-bs-target="#imageModal">
+              <div class="label text-center">Product Image</div>
+              <div class="value mt-1 text-center">
+                <img th:if="${detail.auction.image}" th:src="@{'/images/auctions/' + ${detail.auction.image}}"
+                  class="preview-thumb shadow-sm" />
+                <img th:unless="${detail.auction.image}" src="/images/placeholder.jpg"
+                  class="preview-thumb shadow-sm" />
+
+              </div>
+            </div>
+            <div class="meta-item">
+              <div class="label">Seller</div>
+              <div class="value"
+                th:text="${(detail.auction.sellerNameSnapshot ?: detail.auction.seller.fullName) + ' (' + (detail.auction.sellerEmailSnapshot ?: detail.auction.seller.email) + ')'}">
+                Seller</div>
+            </div>
+            <div class="meta-item">
+              <div class="label">Winner</div>
+              <div class="value"
+                th:text="${detail.auction.winner != null ? (detail.auction.winnerNameSnapshot ?: detail.auction.winner.fullName) + ' (' + (detail.auction.winnerEmailSnapshot ?: detail.auction.winner.email) + ')' : 'No winner yet'}">
+                Winner</div>
+            </div>
+            <div class="meta-item">
+              <div class="label">Created</div>
+              <div class="value" th:text="${#temporals.format(detail.auction.createdAt, 'dd/MM/yyyy HH:mm')}">N/A</div>
+            </div>
+            <div class="meta-item">
+              <div class="label">Updated</div>
+              <div class="value" th:text="${#temporals.format(detail.auction.updatedAt, 'dd/MM/yyyy HH:mm')}">N/A</div>
+            </div>
+            <div class="meta-item">
+              <div class="label">Ends At</div>
+              <div class="value"
+                th:text="${detail.auction.endTime != null ? #temporals.format(detail.auction.endTime, 'dd/MM/yyyy HH:mm') : 'N/A'}">
+                N/A</div>
+            </div>
+            <div class="meta-item">
+              <div class="label">Visibility</div>
+              <div class="value" th:text="${detail.auction.visibility}">PUBLIC</div>
+            </div>
+          </div>
+
+          <h5 class="fw-semibold mb-3 text-primary">Description</h5>
+          <div class="description-box" th:text="${detail.auction.description}">Description</div>
+
+          <div th:if="${detail.draftAuction}" class="notice-panel mt-4">
+            <div class="notice-title">Draft Listing</div>
+            <div>This auction has not been published yet, so bidders cannot see it and no bidding activity should exist
+              at this stage.</div>
+          </div>
+
+          <div th:if="${detail.auction.visibility.name() == 'PRIVATE'}" class="notice-panel mt-4">
+            <div class="notice-title">Private Access Enabled</div>
+            <div>Buyers can still see this listing in browse, but they must submit a valid access code before they can
+              place bids.</div>
+          </div>
+
+          <div th:if="${detail.cancelledAuction}" class="notice-panel cancelled mt-4">
+            <div class="notice-title">Cancellation Details</div>
+            <div class="mb-2">This auction was removed from live bidding by moderation and can no longer accept new
+              bids.</div>
+            <div class="meta-grid">
+              <div class="meta-item">
+                <div class="label">Cancelled At</div>
+                <div class="value"
+                  th:text="${detail.auction.cancelledAt != null ? #temporals.format(detail.auction.cancelledAt, 'dd/MM/yyyy HH:mm') : 'Not recorded'}">
+                  Not recorded</div>
+              </div>
+              <div class="meta-item">
+                <div class="label">Cancelled By</div>
+                <div class="value"
+                  th:text="${detail.auction.cancelledBy != null ? detail.auction.cancelledBy.fullName + ' (' + detail.auction.cancelledBy.email + ')' : 'Admin moderation'}">
+                  Admin moderation</div>
+              </div>
+              <div class="meta-item">
+                <div class="label">Reason</div>
+                <div class="value"
+                  th:text="${detail.auction.cancelReason != null ? detail.auction.cancelReason : 'No reason recorded'}">
+                  No reason recorded</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="surface-card">
+        <div class="section-header">
+          <h3>Bid History</h3>
+        </div>
+        <div th:if="${#lists.isEmpty(detail.bids)}" class="empty-state">
+          <i class="bi bi-graph-up-arrow" style="font-size: 2rem;"></i>
+          <div class="mt-3" th:if="${detail.draftAuction}">
+            This listing is still in draft, so bidding has not started yet.
+          </div>
+          <div class="mt-3" th:if="${detail.cancelledAuction}">
+            No bids were recorded before this auction was cancelled.
+          </div>
+          <div class="mt-3" th:if="${!detail.draftAuction and !detail.cancelledAuction}">
+            No bids have been placed on this auction.
+          </div>
+        </div>
+
+        <div th:if="${not #lists.isEmpty(detail.bids)}" class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Bidder</th>
+                <th>Email</th>
+                <th>Amount</th>
+                <th>Bid Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="bid, iter : ${detail.bids}">
+                <td class="fw-semibold" th:text="${iter.count}">1</td>
+                <td th:text="${bid.bidderNameSnapshot ?: bid.bidder.fullName}">Bidder Name</td>
+                <td th:text="${bid.bidderEmailSnapshot ?: bid.bidder.email}">bidder@email.com</td>
+                <td class="fw-semibold text-primary"
+                  th:text="${#numbers.formatInteger(bid.amount, 0, 'POINT') + ' VNĐ'}">0 VNĐ</td>
+                <td th:text="${#temporals.format(bid.bidTime, 'dd/MM/yyyy HH:mm:ss.SSS')}">N/A</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script th:if="${detail.auction.status.name() == 'ACTIVE'}"
+      src="/webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script th:if="${detail.auction.status.name() == 'ACTIVE'}"
+      src="/webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
+    <script th:if="${detail.auction.status.name() == 'ACTIVE'}" th:inline="javascript">
+      (function () {
+        const auctionId = /*[[${detail.auction.id}]]*/ null;
+        const liveStatus = document.getElementById('liveStatus');
+        let stompClient = null;
+        let refreshTimer = null;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+
+        function setLiveStatus(message, stateClass) {
+          if (!liveStatus) {
+            return;
+          }
+
+          liveStatus.textContent = message;
+          liveStatus.classList.remove('connected', 'refreshing', 'disconnected');
+          if (stateClass) {
+            liveStatus.classList.add(stateClass);
+          }
+        }
+
+        function scheduleRefresh(message, delayMs) {
+          if (refreshTimer) {
+            return;
+          }
+
+          setLiveStatus(message, 'refreshing');
+          refreshTimer = window.setTimeout(() => {
+            window.location.reload();
+          }, delayMs);
+        }
+
+        function connectWebSocket() {
+          const socket = new SockJS('/ws');
+          stompClient = Stomp.over(socket);
+          stompClient.debug = null;
+
+          stompClient.connect({}, function () {
+            reconnectAttempts = 0;
+            setLiveStatus('Live updates connected', 'connected');
+
+            stompClient.subscribe('/topic/auction/' + auctionId, function (message) {
+              try {
+                const data = JSON.parse(message.body);
+                if (data.eventType === 'AUCTION_ENDED') {
+                  scheduleRefresh('Auction ended. Refreshing...', 300);
+                } else {
+                  scheduleRefresh('New bid received. Refreshing...', 500);
+                }
+              } catch (error) {
+                console.error('Error processing auction update:', error);
+                scheduleRefresh('Update received. Refreshing...', 500);
+              }
+            });
+          }, function (error) {
+            console.error('Admin auction detail WebSocket error:', error);
+            if (reconnectAttempts >= maxReconnectAttempts) {
+              setLiveStatus('Live updates disconnected. Refresh page to reconnect.', 'disconnected');
+              return;
+            }
+
+            reconnectAttempts += 1;
+            setLiveStatus('Reconnecting live updates...', 'disconnected');
+            window.setTimeout(connectWebSocket, Math.min(1000 * reconnectAttempts, 5000));
+          });
+        }
+
+        window.addEventListener('load', connectWebSocket);
+        window.addEventListener('beforeunload', function () {
+          if (stompClient && stompClient.connected) {
+            stompClient.disconnect();
+          }
+        });
+      })();
+    </script>
+
+    <!-- Modal for Image Preview -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title fw-bold text-primary" th:text="${detail.auction.productName}">Product Image</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center p-4">
+            <img th:if="${detail.auction.image}" th:src="@{'/images/auctions/' + ${detail.auction.image}}"
+              class="img-fluid rounded-4 shadow-sm border" th:alt="${detail.auction.productName}"
+              style="max-height: 70vh; width: auto;" />
+            <img th:unless="${detail.auction.image}" src="/images/placeholder.jpg"
+              class="img-fluid rounded-4 shadow-sm border" alt="Placeholder" style="max-height: 70vh; width: auto;" />
+          </div>
+          <div class="modal-footer border-0 pt-0 justify-content-center">
+            <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i> Click anywhere outside or close
+              button to return</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+
+</html>

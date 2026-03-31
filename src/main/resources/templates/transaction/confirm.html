@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+    <title>Confirm Payment - Auctions</title>
+</head>
+
+<body>
+    <main>
+        <style>
+            .confirm-wrapper {
+                min-height: 80vh;
+                padding: 3rem 1rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .back-nav {
+                max-width: 800px;
+                width: 100%;
+                margin-bottom: 2rem;
+            }
+
+            .btn-glass {
+                background: rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                border-radius: 12px;
+                padding: 0.6rem 1.2rem;
+                color: #475569;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                text-decoration: none;
+            }
+
+            .btn-glass:hover {
+                background: rgba(255, 255, 255, 0.9);
+                transform: translateX(-5px);
+                color: #1e293b;
+            }
+
+            .confirm-card {
+                background: white;
+                border-radius: 30px;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+                max-width: 800px;
+                width: 100%;
+                overflow: hidden;
+                border: 1px solid rgba(0, 0, 0, 0.05);
+                animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            @keyframes slideUp {
+                from { opacity: 0; transform: translateY(30px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            .confirm-header {
+                background: linear-gradient(135deg, #0d6efd 0%, #00c6ff 100%);
+                padding: 3rem 2rem;
+                text-align: center;
+                color: white;
+                position: relative;
+            }
+
+            .confirm-header::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 50px;
+                background: white;
+                clip-path: polygon(0 100%, 100% 100%, 100% 0);
+            }
+
+            .confirm-header i {
+                font-size: 3.5rem;
+                margin-bottom: 1rem;
+                display: block;
+                filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.2));
+            }
+
+            .confirm-header h2 {
+                font-size: 2rem;
+                font-weight: 800;
+                margin: 0;
+                letter-spacing: -0.5px;
+            }
+
+            .confirm-body {
+                padding: 3rem;
+            }
+
+            .summary-section {
+                background: #f8fafc;
+                border-radius: 24px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .detail-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.25rem 0;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            .detail-row:last-child {
+                border-bottom: none;
+            }
+
+            .detail-label {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                color: #64748b;
+                font-weight: 500;
+            }
+
+            .detail-label i {
+                font-size: 1.25rem;
+                color: #0d6efd;
+            }
+
+            .detail-value {
+                font-weight: 700;
+                color: #1e293b;
+                font-size: 1.1rem;
+            }
+
+            .amount-highlight {
+                font-size: 1.75rem;
+                color: #1e293b;
+                font-weight: 800;
+            }
+
+
+            .warning-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem 1.25rem;
+                background: #fee2e2;
+                color: #dc2626;
+                border-radius: 30px;
+                font-size: 0.85rem;
+                font-weight: 600;
+                margin-top: 1rem;
+            }
+
+            .warning-pill a {
+                color: #dc2626;
+                text-decoration: underline;
+                font-weight: 700;
+            }
+
+            .confirm-footer {
+                padding: 0 3rem 3rem;
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .btn-confirm {
+                padding: 1rem 2.5rem;
+                border-radius: 15px;
+                font-weight: 700;
+                font-size: 1.05rem;
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .btn-pay {
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                border: none;
+                color: white;
+                box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+            }
+
+            .btn-pay:hover:not(:disabled) {
+                transform: scale(1.05);
+                box-shadow: 0 15px 30px rgba(16, 185, 129, 0.3);
+            }
+
+            .btn-pay:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                filter: grayscale(1);
+            }
+
+            .btn-cancel {
+                background: #f1f5f9;
+                border: none;
+                color: #64748b;
+            }
+
+            .btn-cancel:hover {
+                background: #e2e8f0;
+                color: #1e293b;
+            }
+
+            @media (max-width: 640px) {
+                .confirm-body { padding: 2rem; }
+                .confirm-footer { padding: 0 2rem 2rem; }
+                .detail-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+                .detail-value { align-self: flex-end; }
+            }
+        </style>
+
+        <div class="confirm-wrapper">
+            <div class="back-nav">
+                <a href="/transactions/history" class="btn-glass">
+                    <i class="bi bi-arrow-left"></i> Back to History
+                </a>
+            </div>
+
+            <div class="confirm-card">
+                <div class="confirm-header">
+                    <i class="bi bi-shield-check"></i>
+                    <h2>Confirm Payment</h2>
+                </div>
+
+                <div class="confirm-body">
+                    <div class="summary-section">
+                        <div class="detail-row">
+                            <span class="detail-label">
+                                <i class="bi bi-box-seam"></i> Product
+                            </span>
+                            <span class="detail-value" th:text="${transaction.itemName}">Product Name</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">
+                                <i class="bi bi-person-badge"></i> Seller
+                            </span>
+                            <span class="detail-value" th:text="${transaction.sellerNameSnapshot ?: auction.seller.fullName}">Seller Name</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">
+                                <i class="bi bi-credit-card-2-front"></i> Method
+                            </span>
+                            <span class="detail-value">Virtual Wallet</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">
+                                <i class="bi bi-tag"></i> Final Amount
+                            </span>
+                            <span class="detail-value amount-highlight"
+                                th:text="${#numbers.formatInteger(transaction.price, 0, 'POINT') + ' VNĐ'}">1.000.000 VNĐ</span>
+                        </div>
+                    </div>
+
+                    <div th:if="${walletBalance < transaction.price}" class="text-center mb-4">
+                        <div class="warning-pill">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <span>Insufficient funds. Please <a href="/wallet">top up your wallet</a> to continue.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="confirm-footer">
+                    <a href="/transactions/history" class="btn btn-confirm btn-cancel">Cancel</a>
+                    <form th:action="@{/transactions/pay/{id}(id=${transaction.id})}" method="post" onsubmit="return handlePaySubmit(this)">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" id="payBtn" class="btn btn-confirm btn-pay"
+                            th:disabled="${walletBalance < transaction.price}">
+                            <i class="bi bi-check-circle-fill"></i> Complete Payment
+                        </button>
+                    </form>
+                </div>
+
+                <script>
+                    function handlePaySubmit(form) {
+                        var btn = form.querySelector('#payBtn');
+                        if (btn.disabled) return false;
+                        btn.disabled = true;
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+                        return true;
+                    }
+                </script>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

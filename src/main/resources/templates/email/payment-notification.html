@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Received - Auctions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+        .amount {
+            font-size: 24px;
+            color: #28a745;
+            font-weight: bold;
+        }
+        .details {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            font-size: 14px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Payment Received!</h1>
+    </div>
+    
+    <div class="content">
+        <p>Dear <span th:text="${transaction.seller.fullName}">Seller Name</span>,</p>
+        
+        <p>Great news! We've received payment for your auction item:</p>
+        
+        <div class="details">
+            <p><strong>Item:</strong> <span th:text="${auction.productName}">Product Name</span></p>
+            <p><strong>Amount Received:</strong> <span class="amount" th:text="${#numbers.formatInteger(transaction.price, 0, 'POINT') + ' VNĐ'}">1.000.000 VNĐ</span></p>
+            <p><strong>Buyer:</strong> <span th:text="${buyer.fullName}">Buyer Name</span></p>
+            <p><strong>Transaction ID:</strong> <span th:text="${transaction.id}">123456</span></p>
+            <p><strong>Payment Date:</strong> <span th:text="${#temporals.format(transaction.transactionDate, 'dd MMM yyyy HH:mm')}">01 Jan 2024 12:00</span></p>
+        </div>
+        
+        <p>The payment has been credited to your virtual wallet. You can check your balance in the Wallet page.</p>
+        
+        <p>Please ensure to ship the item to the buyer as soon as possible to maintain our high service standards.</p>
+    </div>
+    
+    <div class="footer">
+        <p>Thank you for using our platform!</p>
+        <p>If you have any questions, please don't hesitate to contact our support team.</p>
+    </div>
+</body>
+</html> 

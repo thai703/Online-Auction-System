@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+  <title>Register - Auctions</title>
+</head>
+
+<body>
+  <main>
+    <style>
+      .auth-wrapper {
+        min-height: calc(100vh - 250px);
+        background: linear-gradient(135deg, #0d6efd20 0%, #0d6efd05 100%);
+        border-radius: 0 0 50px 50px;
+      }
+
+      .auth-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .auth-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .auth-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);
+        padding: 2rem;
+        text-align: center;
+      }
+
+      .auth-header h3 {
+        font-size: 2rem;
+        margin: 0;
+        color: white;
+      }
+
+      .auth-header .icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: white;
+      }
+
+      .auth-body {
+        padding: 2.5rem;
+      }
+
+      .form-floating>.form-control:focus,
+      .form-floating>.form-control:not(:placeholder-shown) {
+        padding-top: 1.625rem;
+        padding-bottom: 0.625rem;
+      }
+
+      .form-floating>.form-control:focus~label,
+      .form-floating>.form-control:not(:placeholder-shown)~label {
+        opacity: 0.65;
+        transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+      }
+
+      .form-control,
+      .form-select {
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+      }
+
+      .btn-auth {
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);
+        border: none;
+        transition: all 0.3s ease;
+      }
+
+      .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+      }
+
+      .text-danger {
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+      }
+
+      .auth-footer a {
+        color: #0d6efd;
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+
+      .auth-footer a:hover {
+        color: #0056b3;
+      }
+    </style>
+
+    <div class="auth-wrapper py-5">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-md-8 col-lg-6">
+            <div class="auth-card">
+              <div class="auth-header">
+                <i class="bi bi-person-plus icon"></i>
+                <h3>Create Your Account</h3>
+              </div>
+
+              <div class="auth-body">
+                <form th:action="@{/register}" th:object="${registerRequest}" method="post">
+                  <div class="form-floating mb-4">
+                    <input type="text" class="form-control" id="fullName" th:field="*{fullName}" placeholder="John Doe"
+                      required />
+                    <label for="fullName"> <i class="bi bi-person me-2"></i>Full Name </label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('fullName')}">
+                      <i class="bi bi-exclamation-circle"></i>
+                      <span th:errors="*{fullName}"></span>
+                    </div>
+                  </div>
+
+                  <div class="form-floating mb-4">
+                    <input type="email" class="form-control" id="email" th:field="*{email}"
+                      placeholder="name@example.com" required />
+                    <label for="email"> <i class="bi bi-envelope me-2"></i>Email Address </label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('email')}">
+                      <i class="bi bi-exclamation-circle"></i>
+                      <span th:errors="*{email}"></span>
+                    </div>
+                  </div>
+
+                  <div class="form-floating mb-4">
+                    <input type="tel" class="form-control" id="phoneNumber" th:field="*{phoneNumber}"
+                      placeholder="+1234567890" required />
+                    <label for="phoneNumber"> <i class="bi bi-telephone me-2"></i>Phone Number </label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('phoneNumber')}">
+                      <i class="bi bi-exclamation-circle"></i>
+                      <span th:errors="*{phoneNumber}"></span>
+                    </div>
+                  </div>
+
+                  <div class="form-floating mb-4">
+                    <input type="password" class="form-control" id="password" th:field="*{password}"
+                      placeholder="Password" required minlength="8"
+                      pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
+                      title="At least 8 characters, including uppercase, lowercase, number, and special character" />
+                    <label for="password"> <i class="bi bi-key me-2"></i>Password </label>
+                    <div class="form-text text-muted">
+
+                    </div>
+                    <div class="text-danger" th:if="${#fields.hasErrors('password')}">
+                      <i class="bi bi-exclamation-circle"></i>
+                      <span th:errors="*{password}"></span>
+                    </div>
+                  </div>
+
+                  <div class="form-floating mb-4">
+                    <select class="form-select" id="role" th:field="*{role}" required>
+                      <option value="">Select your role</option>
+                      <option value="BUYER">Buyer</option>
+                      <option value="SELLER">Seller</option>
+                    </select>
+                    <label for="role"> <i class="bi bi-person-badge me-2"></i>Your Role </label>
+                    <div class="text-danger" th:if="${#fields.hasErrors('role')}">
+                      <i class="bi bi-exclamation-circle"></i>
+                      <span th:errors="*{role}"></span>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn btn-auth btn-primary w-100"><i
+                      class="bi bi-person-plus me-2"></i>Create Account</button>
+
+                  <div class="auth-footer">
+                    <span class="text-muted">Already have an account?</span>
+                    <a href="/login" class="ms-1">Sign in now</a>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+
+</html>

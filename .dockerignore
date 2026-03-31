@@ -1,0 +1,12 @@
+target/
+.idea/
+.vscode/
+*.iml
+.env
+.env.*
+data/
+uploads/
+screenshots/
+*.md
+*.log
+.git/

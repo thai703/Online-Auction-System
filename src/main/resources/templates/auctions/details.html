@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+  <title th:text="${privateAccessRequired ? 'Private Auction - Auctions' : auction.productName + ' - Auctions'}">Auction Details - Auctions</title>
+</head>
+
+<body>
+  <main>
+    <style>
+      .auction-details {
+        background: linear-gradient(135deg, #0d6efd20 0%, #0d6efd05 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .auction-image {
+        width: 100%;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .auction-info {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      .auction-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 0;
+        line-height: 1;
+      }
+
+      .status-draft {
+        background: #e9ecef;
+        color: #495057;
+      }
+
+      .status-active {
+        background: #d1e7dd;
+        color: #0f5132;
+      }
+
+      .status-ended {
+        background: #f8d7da;
+        color: #842029;
+      }
+
+      .status-cancelled {
+        background: #fff3cd;
+        color: #997404;
+      }
+
+      .visibility-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        min-height: 44px;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        line-height: 1;
+      }
+
+      .visibility-public {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+
+      .visibility-private {
+        background: #ede9fe;
+        color: #6d28d9;
+      }
+
+      .auction-price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0d6efd;
+        margin-bottom: 1.5rem;
+      }
+
+      .countdown {
+        background: linear-gradient(135deg, #0d6efd08 0%, #ffffff 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(13, 110, 253, 0.1);
+        animation: fadeIn 0.5s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(1.02);
+        }
+
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .countdown-title {
+        font-size: 1.1rem;
+        color: #0d6efd;
+        margin-bottom: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .countdown-title i {
+        animation: pulse 2s infinite;
+      }
+
+      .countdown-time {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin: 1rem 0;
+        flex-wrap: wrap;
+      }
+
+      .countdown-item {
+        text-align: center;
+        min-width: 85px;
+        background: white;
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease;
+      }
+
+      .countdown-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .countdown-number {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #0d6efd;
+        margin-bottom: 0.5rem;
+        font-family: 'Arial', sans-serif;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+        transition: color 0.3s ease;
+      }
+
+      .countdown-item:hover .countdown-number {
+        color: #0b5ed7;
+      }
+
+      .countdown-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .end-time {
+        margin-top: 1.25rem;
+        font-size: 0.9rem;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(13, 110, 253, 0.05);
+        border-radius: 20px;
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .end-time i {
+        color: #0d6efd;
+      }
+
+      /* Add warning colors when time is running low */
+      .countdown.warning .countdown-number {
+        color: #fd7e14;
+      }
+
+      .countdown.danger .countdown-number {
+        color: #dc3545;
+        animation: pulse 1s infinite;
+      }
+
+      .auction-meta {
+        margin-bottom: 2rem;
+      }
+
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        color: #6c757d;
+      }
+
+      .description {
+        white-space: pre-line;
+        color: #495057;
+        line-height: 1.6;
+      }
+
+      .seller-info {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 2rem;
+      }
+
+      .btn-auction {
+        border-radius: 10px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+      }
+
+      .btn-auction:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+      }
+
+      .private-access-card {
+        background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+        border: 1px solid #bfdbfe;
+        border-radius: 18px;
+        padding: 1.25rem;
+      }
+
+      .private-access-card h5 {
+        color: #1d4ed8;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .private-access-card p {
+        color: #475569;
+        margin-bottom: 1rem;
+      }
+
+      .private-access-card .form-control {
+        border-radius: 12px;
+        min-height: 48px;
+      }
+    </style>
+
+    <div class="auction-details">
+      <div class="container">
+        <!-- Back Button -->
+        <a sec:authorize="hasRole('SELLER')" href="/auctions" class="btn btn-outline-primary mb-4">
+          <i class="bi bi-arrow-left me-2"></i>Back to My Auctions
+        </a>
+        <a th:if="${adminBackUrl != null}" th:href="${adminBackUrl}" class="btn btn-outline-primary mb-4">
+          <i class="bi bi-arrow-left me-2"></i>Back to Admin Auctions
+        </a>
+        <a sec:authorize="hasRole('BUYER')" href="/auctions/browse" class="btn btn-outline-primary mb-4">
+          <i class="bi bi-arrow-left me-2"></i>Back to Browse
+        </a>
+
+        <div class="row g-4">
+          <!-- Image Column -->
+          <div class="col-md-6">
+            <img th:if="${auction.image}" th:src="@{'/images/auctions/' + ${auction.image}}"
+              th:alt="${auction.productName}" class="auction-image" />
+            <img th:unless="${auction.image}" src="/images/placeholder.jpg" th:alt="${auction.productName}"
+              class="auction-image" />
+          </div>
+
+          <!-- Info Column -->
+          <div class="col-md-6">
+            <div class="auction-info">
+              <!-- Status and Actions Row -->
+              <div class="d-flex justify-content-between align-items-start mb-4">
+                <div class="d-flex gap-2 flex-wrap">
+                  <span th:class="'auction-status ' + 'status-' + ${#strings.toLowerCase(auction.status)}"
+                    th:text="${auction.status}">Status</span>
+                  <span th:class="'visibility-badge visibility-' + ${#strings.toLowerCase(auction.visibility.name())}">
+                    <i th:class="${auction.visibility.name() == 'PRIVATE'} ? 'bi bi-lock-fill' : 'bi bi-globe2'"></i>
+                    <span th:text="${auction.visibility}">PUBLIC</span>
+                  </span>
+                </div>
+
+                <!-- Action Buttons for Owner -->
+                <div th:if="${isOwner}" class="d-flex gap-2">
+                  <a th:if="${auction.status.name() == 'DRAFT'}" th:href="@{'/auctions/edit/' + ${auction.id}}"
+                    class="btn btn-primary btn-sm"> <i class="bi bi-pencil me-1"></i>Edit </a>
+                  <form th:action="@{'/auctions/delete/' + ${auction.id}}" method="post" style="display: inline"
+                    onsubmit="return confirm('Are you sure you want to delete this auction?')">
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash me-1"></i>Delete</button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Title -->
+              <h1 class="h2 mb-3" th:text="${auction.productName}">Product Name</h1>
+
+              <!-- Price -->
+              <div class="price-section">
+                <div class="price-label">Starting Price:</div>
+                <div class="auction-price"
+                  th:text="${#numbers.formatInteger(auction.startingPrice, 0, 'POINT') + ' VNĐ'}">0 VNĐ</div>
+              </div>
+
+              <!-- Countdown Timer for Active Auctions -->
+              <div th:if="${auction.status.name() == 'ACTIVE'}" class="countdown">
+                <div class="countdown-title">
+                  <i class="bi bi-clock"></i>
+                  Time Remaining
+                </div>
+                <div class="countdown-time">
+                  <div class="countdown-item">
+                    <div class="countdown-number" id="days">00</div>
+                    <div class="countdown-label">Days</div>
+                  </div>
+                  <div class="countdown-item">
+                    <div class="countdown-number" id="hours">00</div>
+                    <div class="countdown-label">Hours</div>
+                  </div>
+                  <div class="countdown-item">
+                    <div class="countdown-number" id="minutes">00</div>
+                    <div class="countdown-label">Minutes</div>
+                  </div>
+                  <div class="countdown-item">
+                    <div class="countdown-number" id="seconds">00</div>
+                    <div class="countdown-label">Seconds</div>
+                  </div>
+                </div>
+                <div class="end-time">
+                  <i class="bi bi-calendar-event"></i>
+                  Ends on <span th:text="${#temporals.format(auction.endTime, 'dd MMM yyyy HH:mm')}">End Time</span>
+                </div>
+              </div>
+
+              <!-- JavaScript for Countdown -->
+              <script th:if="${auction.status.name() == 'ACTIVE'}" th:inline="javascript">
+                let countdownInterval = null;
+
+                function updateCountdown() {
+                  try {
+                    const endTimeStr = /*[[${#temporals.format(auction.endTime, 'yyyy-MM-dd HH:mm:ss')}]]*/ '';
+                    const endTime = new Date(endTimeStr).getTime();
+                    const now = new Date().getTime();
+                    const timeLeft = endTime - now;
+
+                    const countdownElement = document.querySelector('.countdown');
+
+                    if (timeLeft <= 0) {
+                      // Stop the interval — no more ticking
+                      if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                      }
+                      // Show waiting message — WebSocket will trigger the reload
+                      countdownElement.innerHTML = `
+                        <div class="countdown-title text-danger">
+                          <i class="bi bi-alarm"></i> Time is up!
+                        </div>
+                        <div class="text-muted mt-2">
+                          <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                          Waiting for the system to process the auction end...
+                        </div>`;
+                      return;
+                    }
+
+                    // Calculate time units
+                    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                    // Update countdown numbers with transition
+                    ['days', 'hours', 'minutes', 'seconds'].forEach((unit) => {
+                      const element = document.getElementById(unit);
+                      const newValue = String({ days, hours, minutes, seconds }[unit]).padStart(2, '0');
+                      if (element.textContent !== newValue) {
+                        element.style.transform = 'translateY(-10px)';
+                        element.style.opacity = '0';
+                        setTimeout(() => {
+                          element.textContent = newValue;
+                          element.style.transform = 'translateY(0)';
+                          element.style.opacity = '1';
+                        }, 100);
+                      }
+                    });
+
+                    // Add warning classes based on time left
+                    if (days === 0) {
+                      if (hours < 1) {
+                        countdownElement.classList.add('danger');
+                        countdownElement.classList.remove('warning');
+                      } else if (hours < 24) {
+                        countdownElement.classList.add('warning');
+                        countdownElement.classList.remove('danger');
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error updating countdown:', error);
+                  }
+                }
+
+                // Add transition styles to countdown numbers
+                document.querySelectorAll('.countdown-number').forEach((el) => {
+                  el.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                });
+
+                // Update countdown immediately and then every second
+                updateCountdown();
+                countdownInterval = setInterval(updateCountdown, 1000);
+              </script>
+
+              <!-- Meta Information -->
+              <div class="auction-meta">
+                <div class="meta-item">
+                  <i class="bi bi-clock-history"></i>
+                  <span th:text="${'Created: ' + #temporals.format(auction.createdAt, 'dd MMM yyyy HH:mm')}">Created
+                    Date</span>
+                </div>
+
+                <div class="meta-item">
+                  <i class="bi bi-clock"></i>
+                  <span th:if="${auction.status == 'DRAFT'}">Not started</span>
+                  <span th:if="${auction.status != 'DRAFT'}"
+                    th:text="${'Ends: ' + #temporals.format(auction.endTime, 'dd MMM yyyy HH:mm')}">End Time</span>
+                </div>
+
+                <div class="meta-item">
+                  <i class="bi bi-person"></i>
+                  <span th:text="${'Seller: ' + auction.seller.fullName}">Seller Name</span>
+                </div>
+                <div class="meta-item">
+                  <i th:class="${auction.visibility.name() == 'PRIVATE'} ? 'bi bi-shield-lock' : 'bi bi-unlock'"></i>
+                  <span th:text="${'Access: ' + auction.visibility}">Access</span>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div class="mb-4">
+                <h5>Description</h5>
+                <p class="description" th:text="${auction.description}">Description text here...</p>
+              </div>
+
+              <!-- Place Bid / Unlock Section -->
+              <div class="d-grid mb-4">
+                <!-- Private auction: unlock form (when user hasn't unlocked yet) -->
+                <div th:if="${privateAccessRequired && auction.status.name() == 'ACTIVE' && !isOwner}">
+                  <div class="private-access-card">
+                    <h5><i class="bi bi-key me-2"></i>Unlock to Place Bids</h5>
+                    <!-- Blocked: no attempts remaining -->
+                    <div th:if="${unlockAttemptsRemaining != null && unlockAttemptsRemaining <= 0}">
+                      <div class="alert alert-danger mb-0">
+                        <i class="bi bi-shield-exclamation me-2"></i>
+                        Too many failed attempts. Please try again in 15 minutes or contact the seller for the correct code.
+                      </div>
+                    </div>
+                    <!-- Has attempts: show form -->
+                    <div th:if="${unlockAttemptsRemaining == null || unlockAttemptsRemaining > 0}">
+                      <p>This is a private auction. Enter the seller's access code to join the bidding.</p>
+                      <form th:action="@{'/auctions/' + ${auction.id} + '/unlock'}" method="post" class="row g-3 align-items-end">
+                        <div class="col-12 col-md-8">
+                          <label for="accessCode" class="form-label fw-semibold">Access Code</label>
+                          <input id="accessCode" name="accessCode" type="password" class="form-control" autocomplete="one-time-code"
+                            placeholder="Enter private auction code" required />
+                        </div>
+                        <div class="col-12 col-md-4">
+                          <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-unlock me-2"></i>Unlock
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Normal: Place Bid button (public or already unlocked private) -->
+                <a th:if="${auction.status.name() == 'ACTIVE' && !isOwner && !privateAccessRequired}"
+                  th:href="@{'/bids/auction/' + ${auction.id}}" class="btn btn-primary btn-lg w-100">
+                  <i class="bi bi-cash-coin me-2"></i>PLACE BID
+                </a>
+
+                <div th:if="${auction.status.name() != 'ACTIVE'}" class="alert alert-warning text-center">
+                  <i class="bi bi-exclamation-circle me-2"></i>
+                  <span
+                    th:text="${auction.status.name() == 'ENDED' ? 'This auction has ended.' : 'This auction is not active.'}">
+                    Status message
+                  </span>
+                </div>
+
+                <div th:if="${isOwner}" class="alert alert-info text-center">
+                  <i class="bi bi-info-circle me-2"></i>
+                  <span>You cannot bid on your own auction.</span>
+                </div>
+              </div>
+
+              <!-- Seller Info -->
+              <div class="seller-info">
+                <h6 class="mb-2">Contact Information</h6>
+                <div class="meta-item">
+                  <i class="bi bi-envelope"></i>
+                  <span th:text="${auction.seller.email}">seller@email.com</span>
+                </div>
+                <div class="meta-item">
+                  <i class="bi bi-telephone"></i>
+                  <span th:text="${auction.seller.phoneNumber}">Phone number</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Popup Modal for Auction End -->
+    <div class="modal fade" id="auctionEndModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+          style="border-radius: 20px; overflow: hidden; border: none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+          <div id="modalHeader" class="modal-header border-0 text-center d-block"
+            style="padding: 2.5rem 2rem 1rem; background: #ffffff;">
+            <h4 class="modal-title" id="modalTitle" style="font-weight: 800; color: #0f172a; font-size: 1.75rem; letter-spacing: -0.5px;">Auction Ended</h4>
+          </div>
+          <div class="modal-body" style="padding: 0 2rem 1.5rem;">
+            <div id="modalMessage"></div>
+          </div>
+          <div class="modal-footer border-0 justify-content-center" style="padding: 1rem 2rem 2.5rem; background: #ffffff;">
+            <div id="modalActions" style="width: 100%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WebSocket for realtime auction status updates -->
+    <script th:if="${auction.status.name() == 'ACTIVE'}" src="/webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script th:if="${auction.status.name() == 'ACTIVE'}" src="/webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
+    <script th:if="${auction.status.name() == 'ACTIVE'}" th:inline="javascript">
+      (function () {
+        const auctionId = /*[[${auction.id}]]*/ null;
+        const currentUserId = /*[[${#authentication.principal.id}]]*/ null;
+        const socket = new SockJS('/ws');
+        const stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+        let auctionEndReloadTimer = null;
+        let auctionEndHandled = false;
+
+        stompClient.connect({}, function () {
+          stompClient.subscribe('/topic/auction/' + auctionId, function (message) {
+            try {
+              const data = JSON.parse(message.body);
+              if (data.eventType === 'AUCTION_ENDED' && !auctionEndHandled && !auctionEndReloadTimer) {
+                auctionEndReloadTimer = window.setTimeout(function () {
+                  window.location.reload();
+                }, 300);
+              }
+            } catch (e) {
+              console.error('Error processing WebSocket message:', e);
+            }
+          });
+
+          stompClient.subscribe('/user/queue/auction-end', function (message) {
+            try {
+              const data = JSON.parse(message.body);
+              if (data.auctionId === auctionId && !auctionEndHandled) {
+                auctionEndHandled = true;
+                if (auctionEndReloadTimer) {
+                  window.clearTimeout(auctionEndReloadTimer);
+                  auctionEndReloadTimer = null;
+                }
+                showAuctionEndPopup(data);
+              }
+            } catch (e) {
+              console.error('Error processing private auction-end message:', e);
+            }
+          });
+        });
+
+        function showAuctionEndPopup(data) {
+          const title = document.getElementById('modalTitle');
+          const msg = document.getElementById('modalMessage');
+          const actions = document.getElementById('modalActions');
+
+          const isWinner = (data.winnerId && currentUserId === data.winnerId);
+          const priceFormatted = data.winnerName ? Math.round(data.finalPrice).toLocaleString('vi-VN') : null;
+
+          // Clear previous content safely
+          msg.textContent = '';
+          actions.textContent = '';
+          title.textContent = 'Auction Ended';
+
+          if (data.winnerName) {
+            const card = document.createElement('div');
+            card.style.cssText = 'background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; margin: 0 auto; text-align: left;';
+
+            const productDiv = document.createElement('div');
+            productDiv.style.cssText = 'font-weight: 800; color: #0d6efd; margin-bottom: 1.25rem; font-size: 1.25rem; text-align: center;';
+            productDiv.textContent = data.productName || 'Auction Item';
+            card.appendChild(productDiv);
+
+            const winnerRow = document.createElement('div');
+            winnerRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px dashed #cbd5e1;';
+            const winnerLabel = document.createElement('span');
+            winnerLabel.style.cssText = 'color: #64748b; font-weight: 500;';
+            winnerLabel.textContent = 'Winner';
+            const winnerValue = document.createElement('strong');
+            winnerValue.style.cssText = 'color: #1e293b; font-size: 1.1rem;';
+            winnerValue.textContent = data.winnerName;
+            winnerRow.appendChild(winnerLabel);
+            winnerRow.appendChild(winnerValue);
+            card.appendChild(winnerRow);
+
+            const priceRow = document.createElement('div');
+            priceRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding-top: 0.75rem;';
+            const priceLabel = document.createElement('span');
+            priceLabel.style.cssText = 'color: #64748b; font-weight: 500;';
+            priceLabel.textContent = 'Final Price';
+            const priceValue = document.createElement('strong');
+            priceValue.style.cssText = 'color: #10b981; font-size: 1.25rem;';
+            priceValue.textContent = priceFormatted + ' VN\u0110';
+            priceRow.appendChild(priceLabel);
+            priceRow.appendChild(priceValue);
+            card.appendChild(priceRow);
+
+            msg.appendChild(card);
+
+            if (isWinner) {
+              const btnContainer = document.createElement('div');
+              btnContainer.style.cssText = 'display: flex; flex-direction: column; gap: 0.75rem; width: 100%;';
+              const payBtn = document.createElement('a');
+              payBtn.href = '/transactions/history';
+              payBtn.className = 'btn btn-success';
+              payBtn.style.cssText = 'width: 100%; border-radius: 12px; padding: 1rem; font-weight: 700; font-size: 1.1rem;';
+              payBtn.textContent = 'Proceed to Payment';
+              const closeBtn = document.createElement('button');
+              closeBtn.type = 'button';
+              closeBtn.className = 'btn btn-outline-secondary';
+              closeBtn.style.cssText = 'width: 100%; border-radius: 12px; padding: 1rem; font-weight: 700; font-size: 1.1rem;';
+              closeBtn.textContent = 'Close';
+              closeBtn.addEventListener('click', () => location.reload());
+              btnContainer.appendChild(payBtn);
+              btnContainer.appendChild(closeBtn);
+              actions.appendChild(btnContainer);
+            } else {
+              const closeBtn = document.createElement('button');
+              closeBtn.type = 'button';
+              closeBtn.className = 'btn btn-primary';
+              closeBtn.style.cssText = 'width: 100%; border-radius: 12px; padding: 1rem; font-weight: 700; font-size: 1.1rem;';
+              closeBtn.textContent = 'Close';
+              closeBtn.addEventListener('click', () => location.reload());
+              actions.appendChild(closeBtn);
+            }
+          } else {
+            const card = document.createElement('div');
+            card.style.cssText = 'background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; margin: 0 auto; text-align: center;';
+            const productDiv = document.createElement('div');
+            productDiv.style.cssText = 'font-weight: 800; color: #64748b; margin-bottom: 0.75rem; font-size: 1.25rem;';
+            productDiv.textContent = data.productName || 'Auction Item';
+            const noWinnerDiv = document.createElement('div');
+            noWinnerDiv.style.cssText = 'color: #94a3b8; font-weight: 500;';
+            noWinnerDiv.textContent = 'This auction ended with no winner.';
+            card.appendChild(productDiv);
+            card.appendChild(noWinnerDiv);
+            msg.appendChild(card);
+
+            const closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'btn btn-secondary';
+            closeBtn.style.cssText = 'width: 100%; border-radius: 12px; padding: 1rem; font-weight: 700; font-size: 1.1rem;';
+            closeBtn.textContent = 'Close';
+            closeBtn.addEventListener('click', () => location.reload());
+            actions.appendChild(closeBtn);
+          }
+
+          const bsModal = new bootstrap.Modal(document.getElementById('auctionEndModal'));
+          bsModal.show();
+        }
+      })();
+    </script>
+  </main>
+</body>
+
+</html>

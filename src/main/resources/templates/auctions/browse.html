@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+    <title>Browse Auctions</title>
+</head>
+
+<body>
+    <main>
+        <style>
+            .browse-header {
+                background: linear-gradient(135deg, #0d6efd20 0%, #0d6efd05 100%);
+                border-radius: 20px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .browse-toolbar {
+                background: rgba(255, 255, 255, 0.92);
+                border: 1px solid rgba(13, 110, 253, 0.12);
+                border-radius: 18px;
+                padding: 1.25rem;
+                margin-bottom: 1.75rem;
+                box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+            }
+
+            .browse-toolbar .form-control,
+            .browse-toolbar .form-select {
+                border-radius: 12px;
+                border: 1px solid #dbeafe;
+                min-height: 48px;
+            }
+
+            .browse-toolbar .form-control:focus,
+            .browse-toolbar .form-select:focus {
+                border-color: #93c5fd;
+                box-shadow: 0 0 0 0.18rem rgba(59, 130, 246, 0.12);
+            }
+
+            .browse-toolbar .btn {
+                min-height: 48px;
+                border-radius: 12px;
+                font-weight: 600;
+            }
+
+            .results-meta {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 1rem;
+                margin-bottom: 0.75rem;
+                color: #475569;
+                font-size: 0.95rem;
+            }
+
+            .auction-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 2rem;
+                padding: 1rem;
+            }
+
+            .auction-card {
+                background: white;
+                border-radius: 15px;
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .auction-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            }
+
+            .auction-image {
+                width: 100%;
+                height: 200px;
+                object-fit: cover;
+            }
+
+            .auction-media {
+                position: relative;
+            }
+
+            .auction-visibility {
+                position: absolute;
+                top: 1rem;
+                left: 1rem;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                padding: 0.45rem 0.8rem;
+                border-radius: 999px;
+                font-size: 0.75rem;
+                font-weight: 700;
+                letter-spacing: 0.03em;
+                box-shadow: 0 8px 18px rgba(15, 23, 42, 0.16);
+            }
+
+            .auction-visibility.public {
+                background: rgba(219, 234, 254, 0.95);
+                color: #1d4ed8;
+            }
+
+            .auction-visibility.private {
+                background: rgba(237, 233, 254, 0.95);
+                color: #6d28d9;
+            }
+
+            .auction-info {
+                padding: 1.5rem;
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .auction-title {
+                font-size: 1.25rem;
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+                color: #212529;
+            }
+
+            .auction-description {
+                color: #6c757d;
+                margin-bottom: 1rem;
+                flex-grow: 1;
+            }
+
+            .auction-meta {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: auto;
+            }
+
+            .auction-price {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #0d6efd;
+            }
+
+            .auction-time {
+                font-size: 0.875rem;
+                color: #6c757d;
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 3rem;
+                background: white;
+                border-radius: 15px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+                grid-column: 1 / -1;
+            }
+
+            .empty-state i {
+                font-size: 4rem;
+                color: #6c757d;
+                margin-bottom: 1rem;
+            }
+
+            .pagination {
+                margin-top: 2rem;
+                justify-content: center;
+            }
+        </style>
+
+        <div class="browse-header">
+            <div class="container">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4">
+                    <div>
+                        <h1 class="mb-2">Browse Active Auctions</h1>
+                        <p class="text-muted mb-0">Search live listings and sort them by price, ending time, or newest
+                            activity.</p>
+                    </div>
+                </div>
+
+                <form class="browse-toolbar" method="get" th:action="@{/auctions/browse}">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-lg-6">
+                            <label for="keyword" class="form-label fw-semibold">Search</label>
+                            <input type="text" id="keyword" name="keyword" class="form-control" th:value="${keyword}"
+                                placeholder="Product name or description" />
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label for="visibility" class="form-label fw-semibold">Access</label>
+                            <select id="visibility" name="visibility" class="form-select">
+                                <option value="all" th:selected="${visibility == 'all'}">All auctions</option>
+                                <option value="public" th:selected="${visibility == 'public'}">Public</option>
+                                <option value="private" th:selected="${visibility == 'private'}">Private</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label for="sort" class="form-label fw-semibold">Sort By</label>
+                            <select id="sort" name="sort" class="form-select">
+                                <option value="endingSoon" th:selected="${sort == 'endingSoon'}">Ending soon</option>
+                                <option value="newest" th:selected="${sort == 'newest'}">Newest</option>
+                                <option value="priceLow" th:selected="${sort == 'priceLow'}">Price: low to high</option>
+                                <option value="priceHigh" th:selected="${sort == 'priceHigh'}">Price: high to low
+                                </option>
+                                <option value="nameAsc" th:selected="${sort == 'nameAsc'}">Name A-Z</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                Apply
+                            </button>
+                            <a th:href="@{/auctions/browse}" class="btn btn-outline-secondary">Reset</a>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="results-meta">
+                    <div>
+                        <span class="fw-semibold" th:text="${totalElements}">0</span>
+                        <span>active auction(s) found</span>
+                    </div>
+                    <div th:if="${keyword != null and !#strings.isEmpty(keyword.trim())}">
+                        Results for <span class="fw-semibold" th:text="${keyword}">keyword</span>
+                    </div>
+                </div>
+
+                <div class="auction-grid">
+                    <!-- Empty State -->
+                    <div th:if="${#lists.isEmpty(auctions)}" class="empty-state">
+                        <i class="bi bi-box"></i>
+                        <h3>No Matching Auctions</h3>
+                        <p class="text-muted">Try another keyword or reset your filters to see more active auctions.</p>
+                    </div>
+
+                    <!-- Auction Cards -->
+                    <div th:each="auction : ${auctions}" class="auction-card">
+                        <div class="auction-media">
+                            <img th:if="${auction.image}" th:src="@{'/images/auctions/' + ${auction.image}}"
+                                th:alt="${auction.productName}" class="auction-image" />
+                            <img th:unless="${auction.image}" src="/images/placeholder.jpg"
+                                th:alt="${auction.productName}" class="auction-image" />
+                            <span th:if="${auction.visibility.name() != 'PRIVATE'}" class="auction-visibility public">
+                                <i class="bi bi-globe2"></i>
+                                <span>PUBLIC</span>
+                            </span>
+                            <span th:if="${auction.visibility.name() == 'PRIVATE'}" class="auction-visibility private">
+                                <i class="bi bi-lock-fill"></i>
+                                <span>PRIVATE</span>
+                            </span>
+                        </div>
+                        <div class="auction-info">
+                            <h2 class="auction-title" th:text="${auction.productName}">Product Name</h2>
+                            <p class="auction-description" th:text="${#strings.abbreviate(auction.description, 100)}">
+                                Description
+                            </p>
+                            <div class="auction-meta">
+                                <div class="auction-price"
+                                    th:text="${#numbers.formatInteger(auction.currentPrice != null ? auction.currentPrice : auction.startingPrice, 0, 'POINT') + ' VNĐ'}">
+                                    10000 VNĐ
+                                </div>
+                                <div class="auction-time">
+                                    <i class="bi bi-clock me-1"></i>
+                                    <span th:text="${'Ends: ' + #temporals.format(auction.endTime, 'dd MMM HH:mm')}">
+                                        End Time
+                                    </span>
+                                </div>
+                            </div>
+                            <a th:href="@{'/auctions/' + ${auction.id}}" class="btn btn-primary mt-3 w-100">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <nav th:if="${totalPages > 1}" class="custom-pagination mt-3" aria-label="Auction navigation">
+                    <ul class="pagination justify-content-center" style="gap:0.5rem;">
+                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                            <a class="page-link"
+                                th:href="@{/auctions/browse(page=${currentPage - 1}, keyword=${keyword}, visibility=${visibility}, sort=${sort})}"
+                                aria-label="Previous" style="border-radius:10px;">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}"
+                            th:classappend="${currentPage == i} ? 'active'">
+                            <a class="page-link"
+                                th:href="@{/auctions/browse(page=${i}, keyword=${keyword}, visibility=${visibility}, sort=${sort})}"
+                                th:text="${i}" style="border-radius:10px;">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                            <a class="page-link"
+                                th:href="@{/auctions/browse(page=${currentPage + 1}, keyword=${keyword}, visibility=${visibility}, sort=${sort})}"
+                                aria-label="Next" style="border-radius:10px;">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

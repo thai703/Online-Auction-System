@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+    <title th:text="${auction.productName + ' - Place Bid'}">Place Bid</title>
+</head>
+
+<body>
+    <main>
+        <style>
+            .bid-section {
+                background: linear-gradient(135deg, #0d6efd20 0%, #0d6efd05 100%);
+                border-radius: 20px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .bid-form {
+                background: white;
+                border-radius: 15px;
+                padding: 2rem;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+                margin-bottom: 2rem;
+            }
+
+            .bid-list {
+                background: white;
+                border-radius: 15px;
+                padding: 2rem;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            }
+
+            .bid-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .bid-item:last-child {
+                border-bottom: none;
+            }
+
+            .bid-amount {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #0d6efd;
+            }
+
+            .bid-info {
+                color: #6c757d;
+                font-size: 0.875rem;
+            }
+
+            .highest-bid {
+                background: #d1e7dd;
+                border-radius: 10px;
+            }
+
+            .bid-input {
+                font-size: 1.5rem;
+                padding: 1rem;
+                text-align: center;
+                border: 2px solid #0d6efd;
+                border-radius: 10px;
+            }
+
+            .bid-button {
+                width: 100%;
+                padding: 1rem;
+                font-size: 1.25rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            #bidError {
+                display: none;
+                padding: 1rem;
+                margin-top: 1rem;
+                border-radius: 10px;
+                background: #f8d7da;
+                color: #842029;
+                text-align: center;
+            }
+
+            #bidSuccess {
+                display: none;
+                padding: 1rem;
+                margin-top: 1rem;
+                border-radius: 10px;
+                background: #d1e7dd;
+                color: #0f5132;
+                text-align: center;
+                animation: fadeOut 3s forwards;
+            }
+
+            @keyframes fadeOut {
+                0% {
+                    opacity: 1;
+                }
+
+                70% {
+                    opacity: 1;
+                }
+
+                100% {
+                    opacity: 0;
+                }
+            }
+
+            .bid-success {
+                animation: fadeInOut 2s ease-in-out;
+            }
+
+            @keyframes fadeInOut {
+                0% {
+                    opacity: 0;
+                }
+
+                10% {
+                    opacity: 1;
+                }
+
+                90% {
+                    opacity: 1;
+                }
+
+                100% {
+                    opacity: 0;
+                }
+            }
+        </style>
+
+        <div class="bid-section">
+            <div class="container">
+                <!-- Back to Auction -->
+                <a th:href="@{'/auctions/' + ${auction.id}}" class="btn btn-outline-primary mb-4">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Auction
+                </a>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <!-- Bid List -->
+                        <div class="bid-list">
+                            <h3 class="mb-4">Bid History</h3>
+                            <div class="bid-items">
+                                <div th:if="${#lists.isEmpty(bids)}" class="text-center text-muted py-4">
+                                    No bids yet. Be the first to bid!
+                                </div>
+                                <div th:each="bid, iterStat : ${bids}"
+                                    th:class="${iterStat.first ? 'bid-item highest-bid' : 'bid-item'}">
+                                    <div>
+                                        <div class="bid-amount"
+                                            th:text="${#numbers.formatInteger(bid.amount, 0, 'POINT') + ' VNĐ'}">10000
+                                            VNĐ</div>
+                                        <div class="bid-info">
+                                            <span th:text="${bid.bidder.fullName}">Bidder Name</span> •
+                                            <span th:text="${#temporals.format(bid.bidTime, 'dd MMM yyyy HH:mm')}">Bid
+                                                Time</span>
+                                        </div>
+                                    </div>
+                                    <div th:if="${iterStat.first}" class="badge bg-success">Highest Bid</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <!-- Bid Form -->
+                        <div class="bid-form">
+                            <h3 class="mb-4">Place Your Bid</h3>
+                            <form id="bidForm" th:data-auction-id="${auction.id}">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <div class="mb-4">
+                                    <label for="bidAmount" class="form-label">Your Bid Amount (VNĐ)</label>
+                                    <input type="text" class="form-control bid-input" id="bidAmount" name="amount"
+                                        th:min="${#lists.isEmpty(bids) ? auction.startingPrice : (auction.currentPrice + 1000)}"
+                                        th:placeholder="${'Min: ' + #numbers.formatInteger(#lists.isEmpty(bids) ? auction.startingPrice : (auction.currentPrice + 1000), 0, 'POINT') + ' VNĐ'}"
+                                        onblur="formatBidAmount(this)" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary bid-button">
+                                    <i class="bi bi-cash-coin me-2"></i>Place Bid
+                                </button>
+                            </form>
+                            <div id="bidError"></div>
+                            <div id="bidSuccess"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Popup Modal for Auction End on Bidding Page -->
+        <div class="modal fade" id="bidAuctionEndModal" tabindex="-1" data-bs-backdrop="static"
+            data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content"
+                    style="border-radius: 20px; overflow: hidden; border: none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+                    <div id="bidModalHeader" class="modal-header border-0 text-center d-block"
+                        style="padding: 2.5rem 2rem 1rem; background: #ffffff;">
+                        <h4 class="modal-title" id="bidModalTitle" style="font-weight: 800; color: #0f172a; font-size: 1.75rem; letter-spacing: -0.5px;">Auction Ended</h4>
+                    </div>
+                    <div class="modal-body" style="padding: 0 2rem 1.5rem;">
+                        <div id="bidModalMessage"></div>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center" style="padding: 1rem 2rem 2.5rem; background: #ffffff;">
+                        <div id="bidModalActions" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WebSocket and Bidding Scripts -->
+        <script src="/webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
+        <script src="/webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
+        <script th:inline="javascript">
+            function formatBidAmount(input) {
+                // Get the value and remove all spaces and dots
+                let value = input.value.replace(/[\s.]/g, '');
+
+                // Parse as integer
+                value = parseInt(value);
+
+                // Format with thousand separators if it's a valid number
+                if (!isNaN(value)) {
+                    // Store actual value as a data attribute
+                    input.dataset.value = value;
+                    // Display formatted value with dots
+                    input.value = value.toLocaleString('vi-VN').replace(/,/g, '.');
+                }
+            }
+
+            const auctionId = /*[[${auction.id}]]*/null;
+            const currentUserId = /*[[${#authentication.principal.id}]]*/null;
+            let stompClient = null;
+            let reconnectAttempts = 0;
+            const maxReconnectAttempts = 5;
+            let auctionEndRedirectTimer = null;
+            let auctionEndHandled = false;
+
+            function connectWebSocket() {
+                if (stompClient !== null) {
+                    try {
+                        stompClient.disconnect();
+                    } catch (e) {
+                        console.error('Error disconnecting:', e);
+                    }
+                }
+
+                console.log('Attempting to connect to WebSocket...');
+                const socket = new SockJS('/ws');
+                stompClient = Stomp.over(socket);
+
+                // Disable debug logging
+                stompClient.debug = null;
+
+                stompClient.connect({},
+                    function (frame) {
+                        console.log('Connected to WebSocket');
+                        reconnectAttempts = 0; // Reset counter on successful connection
+
+                        stompClient.subscribe('/topic/auction/' + auctionId, function (message) {
+                            try {
+                                const data = JSON.parse(message.body);
+                                if (data.eventType === 'AUCTION_ENDED' && !auctionEndHandled) {
+                                    if (!auctionEndRedirectTimer) {
+                                        auctionEndRedirectTimer = window.setTimeout(() => {
+                                            window.location.href = '/auctions/' + auctionId;
+                                        }, 300);
+                                    }
+                                } else if (data.eventType === 'NEW_BID') {
+                                    updateBidDisplay(data);
+                                }
+                            } catch (e) {
+                                console.error('Error processing message:', e);
+                            }
+                        });
+
+                        stompClient.subscribe('/user/queue/auction-end', function (message) {
+                            try {
+                                const data = JSON.parse(message.body);
+                                if (data.auctionId === auctionId && !auctionEndHandled) {
+                                    auctionEndHandled = true;
+                                    if (auctionEndRedirectTimer) {
+                                        clearTimeout(auctionEndRedirectTimer);
+                                        auctionEndRedirectTimer = null;
+                                    }
+                                    handleAuctionEnd(data);
+                                }
+                            } catch (e) {
+                                console.error('Error processing private auction-end message:', e);
+                            }
+                        });
+                    },
+                    function (error) {
+                        console.error('WebSocket connection error:', error);
+                        handleConnectionError();
+                    }
+                );
+            }
+
+            function handleConnectionError() {
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
+                    console.log(`Reconnecting in ${delay / 1000} seconds... (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
+                    setTimeout(connectWebSocket, delay);
+                } else {
+                    console.error('Max reconnection attempts reached');
+                    const errorDiv = document.getElementById('bidError');
+                    errorDiv.textContent = 'Connection lost. Please refresh the page to reconnect.';
+                    errorDiv.style.display = 'block';
+                }
+            }
+
+            function updateBidDisplay(bid) {
+                const bidAmount = Number(bid.amount);
+                const bidTimestamp = bid.timestamp ? new Date(bid.timestamp) : null;
+                if (!Number.isFinite(bidAmount) || !bid.bidderName || !bidTimestamp || Number.isNaN(bidTimestamp.getTime())) {
+                    console.warn('Skipping malformed bid update payload:', bid);
+                    return;
+                }
+
+                const bidItems = document.querySelector('.bid-items');
+                const emptyMessage = bidItems.querySelector('.text-center.text-muted');
+                if (emptyMessage) {
+                    emptyMessage.remove();
+                }
+
+                // Build DOM safely using textContent (prevents XSS)
+                const wrapper = document.createElement('div');
+                wrapper.className = 'bid-item highest-bid';
+
+                const left = document.createElement('div');
+
+                const amountDiv = document.createElement('div');
+                amountDiv.className = 'bid-amount';
+                amountDiv.textContent = Math.round(bidAmount).toLocaleString('vi-VN') + ' VN\u0110';
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'bid-info';
+                infoDiv.textContent = bid.bidderName + ' \u2022 ' + bidTimestamp.toLocaleString('vi-VN');
+
+                left.appendChild(amountDiv);
+                left.appendChild(infoDiv);
+
+                const badge = document.createElement('div');
+                badge.className = 'badge bg-success';
+                badge.textContent = 'Highest Bid';
+
+                wrapper.appendChild(left);
+                wrapper.appendChild(badge);
+
+                // Remove highest-bid class from previous highest bid
+                const previousHighest = bidItems.querySelector('.highest-bid');
+                if (previousHighest) {
+                    previousHighest.classList.remove('highest-bid');
+                    previousHighest.querySelector('.badge')?.remove();
+                }
+
+                // Add new bid at the top of the bid items
+                bidItems.prepend(wrapper);
+
+                // Update minimum bid amount in the form
+                const bidInput = document.getElementById('bidAmount');
+                if (bidInput) {
+                    const newMinBid = Math.round(bidAmount + 1000);
+                    bidInput.min = newMinBid;
+                    bidInput.placeholder = 'Min: ' + newMinBid.toLocaleString() + ' VN\u0110';
+                }
+            }
+
+            function handleAuctionEnd(data) {
+                // Disable the bid form
+                const bidForm = document.getElementById('bidForm');
+                if (bidForm) {
+                    bidForm.querySelectorAll('input, button').forEach(el => el.disabled = true);
+                }
+
+                const title = document.getElementById('bidModalTitle');
+                const msg = document.getElementById('bidModalMessage');
+                const actions = document.getElementById('bidModalActions');
+
+                const isWinner = (data.winnerId && currentUserId === data.winnerId);
+
+                // Clear previous content safely
+                msg.textContent = '';
+                actions.textContent = '';
+
+                title.textContent = 'Auction Ended';
+
+                if (data.winnerName) {
+                    const priceFormatted = Math.round(data.finalPrice).toLocaleString('vi-VN');
+
+                    // Build modal body with safe DOM API
+                    const card = document.createElement('div');
+                    card.style.cssText = 'background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; margin: 0 auto; text-align: left;';
+
+                    const productDiv = document.createElement('div');
+                    productDiv.style.cssText = 'font-weight: 800; color: #0d6efd; margin-bottom: 1.25rem; font-size: 1.25rem; text-align: center;';
+                    productDiv.textContent = data.productName || 'Auction Item';
+                    card.appendChild(productDiv);
+
+                    const winnerRow = document.createElement('div');
+                    winnerRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px dashed #cbd5e1;';
+                    const winnerLabel = document.createElement('span');
+                    winnerLabel.style.cssText = 'color: #64748b; font-weight: 500;';
+                    winnerLabel.textContent = 'Winner';
+                    const winnerValue = document.createElement('strong');
+                    winnerValue.style.cssText = 'color: #1e293b; font-size: 1.1rem;';
+                    winnerValue.textContent = data.winnerName;
+                    winnerRow.appendChild(winnerLabel);
+                    winnerRow.appendChild(winnerValue);
+                    card.appendChild(winnerRow);
+
+                    const priceRow = document.createElement('div');
+                    priceRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding-top: 0.75rem;';
+                    const priceLabel = document.createElement('span');
+                    priceLabel.style.cssText = 'color: #64748b; font-weight: 500;';
+                    priceLabel.textContent = 'Final Price';
+                    const priceValue = document.createElement('strong');
+                    priceValue.style.cssText = 'color: #10b981; font-size: 1.25rem;';
+                    priceValue.textContent = priceFormatted + ' VN\u0110';
+                    priceRow.appendChild(priceLabel);
+                    priceRow.appendChild(priceValue);
+                    card.appendChild(priceRow);
+
+                    msg.appendChild(card);
+
+                    if (isWinner) {
+                        const btnContainer = document.createElement('div');
+                        btnContainer.style.cssText = 'display: flex; flex-direction: column; gap: 0.75rem; width: 100%;';
+                        const payBtn = document.createElement('a');
+                        payBtn.href = '/transactions/history';
+                        payBtn.className = 'btn btn-success';
+                        payBtn.style.cssText = 'width: 100%; border-radius: 12px; padding: 1rem; font-weight: 700; font-size: 1.1rem;';
+                        payBtn.textContent = 'Proceed to Payment';
+                        const closeBtn = document.createElement('button');
+                        closeBtn.type = 'button';
+                        closeBtn.className = 'btn btn-outline-secondary';
+                        closeBtn.style.cssText = 'width: 100%; border-radius: 12px; padding: 1rem; font-weight: 700; font-size: 1.1rem;';
+                        closeBtn.textContent = 'Close';
+                        closeBtn.addEventListener('click', () => location.reload());
+                        btnContainer.appendChild(payBtn);
+                        btnContainer.appendChild(closeBtn);
+                        actions.appendChild(btnContainer);
+                    } else {
+                        const closeBtn = document.createElement('button');
+                        closeBtn.type = 'button';
+                        closeBtn.className = 'btn btn-primary';
+                        closeBtn.style.cssText = 'width: 100%; border-radius: 12px; padding: 1rem; font-weight: 700; font-size: 1.1rem;';
+                        closeBtn.textContent = 'Close';
+                        closeBtn.addEventListener('click', () => location.reload());
+                        actions.appendChild(closeBtn);
+                    }
+                } else {
+                    const card = document.createElement('div');
+                    card.style.cssText = 'background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; margin: 0 auto; text-align: center;';
+                    const productDiv = document.createElement('div');
+                    productDiv.style.cssText = 'font-weight: 800; color: #64748b; margin-bottom: 0.75rem; font-size: 1.25rem;';
+                    productDiv.textContent = data.productName || 'Auction Item';
+                    const noWinnerDiv = document.createElement('div');
+                    noWinnerDiv.style.cssText = 'color: #94a3b8; font-weight: 500;';
+                    noWinnerDiv.textContent = 'This auction ended with no winner.';
+                    card.appendChild(productDiv);
+                    card.appendChild(noWinnerDiv);
+                    msg.appendChild(card);
+
+                    const closeBtn = document.createElement('button');
+                    closeBtn.type = 'button';
+                    closeBtn.className = 'btn btn-secondary';
+                    closeBtn.style.cssText = 'width: 100%; border-radius: 12px; padding: 1rem; font-weight: 700; font-size: 1.1rem;';
+                    closeBtn.textContent = 'Close';
+                    closeBtn.addEventListener('click', () => location.reload());
+                    actions.appendChild(closeBtn);
+                }
+
+                const bsModal = new bootstrap.Modal(document.getElementById('bidAuctionEndModal'));
+                bsModal.show();
+            }
+
+            // Handle bid form submission
+            document.getElementById('bidForm')?.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const form = e.target;
+                const bidInput = form.amount;
+                const csrfToken = form.querySelector('input[name="_csrf"]').value;
+                // Get the raw value and remove any dots
+                let amount = bidInput.value.replace(/\./g, '');
+                amount = parseInt(amount);
+
+                // Validate if it's a multiple of 1000
+                if (amount % 1000 !== 0) {
+                    const errorDiv = document.getElementById('bidError');
+                    errorDiv.textContent = 'Bid amount must be a multiple of 1,000 VNĐ';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                const errorDiv = document.getElementById('bidError');
+                const successDiv = document.getElementById('bidSuccess');
+                const bidBtn = form.querySelector('button[type="submit"]');
+                errorDiv.style.display = 'none';
+                successDiv.style.display = 'none';
+
+                // Disable button to prevent double-click
+                bidBtn.disabled = true;
+                bidBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Placing...';
+
+                fetch('/bids/place', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: `auctionId=${auctionId}&amount=${amount}&_csrf=${csrfToken}`
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            form.reset();
+                            errorDiv.style.display = 'none';
+                            successDiv.textContent = 'Bid placed successfully!';
+                            successDiv.style.display = 'block';
+                            setTimeout(() => {
+                                successDiv.style.display = 'none';
+                            }, 3000);
+                        } else {
+                            errorDiv.textContent = data.message;
+                            errorDiv.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error placing bid:', error);
+                        errorDiv.textContent = 'An error occurred. Please try again.';
+                        errorDiv.style.display = 'block';
+                    })
+                    .finally(() => {
+                        bidBtn.disabled = false;
+                        bidBtn.innerHTML = '<i class="bi bi-cash-coin me-2"></i>Place Bid';
+                    });
+            });
+
+            // Connect to WebSocket when page loads
+            window.addEventListener('load', connectWebSocket);
+
+            // Reconnect when window regains focus
+            window.addEventListener('focus', function () {
+                if (!stompClient || !stompClient.connected) {
+                    connectWebSocket();
+                }
+            });
+        </script>
+    </main>
+</body>
+
+</html>

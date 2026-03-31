@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+  <title>Admin Wallet Audit - Auctions</title>
+</head>
+
+<body>
+  <main>
+    <style>
+      .admin-page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1rem 2.5rem;
+      }
+
+      .page-header {
+        background: linear-gradient(135deg, #2563eb18 0%, #eff6ff 100%);
+        border: 1px solid #dbeafe;
+        border-radius: 20px;
+        padding: 1.5rem 1.75rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 12px 30px rgba(37, 99, 235, 0.08);
+      }
+
+      .page-header h1 {
+        color: #1e40af;
+        font-size: clamp(1.95rem, 3vw, 2.45rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin-bottom: 0.4rem;
+      }
+
+      .page-header p {
+        color: #64748b;
+        margin-bottom: 0;
+        max-width: 760px;
+      }
+
+      .metric-card,
+      .filter-card,
+      .table-card {
+        background: #fff;
+        border: 1px solid #dbeafe;
+        border-radius: 20px;
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
+      }
+
+      .metric-card {
+        height: 100%;
+        padding: 1rem 1.2rem;
+      }
+
+      .metric-label {
+        color: #64748b;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.45rem;
+        text-transform: uppercase;
+      }
+
+      .metric-value {
+        color: #0f172a;
+        font-size: 1.4rem;
+        font-weight: 700;
+        line-height: 1.15;
+      }
+
+      .filter-card {
+        padding: 1.25rem 1.5rem;
+        margin: 1.5rem 0;
+      }
+
+      .table-card {
+        overflow: hidden;
+      }
+
+      .table-header {
+        padding: 1.15rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: linear-gradient(180deg, #f8fbff 0%, #f8fafc 100%);
+      }
+
+      .table-header h3 {
+        color: #1e40af;
+        font-size: 1.45rem;
+        font-weight: 650;
+        margin: 0;
+      }
+
+      .table-header-meta {
+        color: #64748b;
+        font-size: 0.9rem;
+      }
+
+      .form-label {
+        color: #475569;
+        font-size: 0.83rem;
+        font-weight: 600;
+        margin-bottom: 0.45rem;
+      }
+
+      .form-control,
+      .form-select {
+        min-height: 48px;
+        border-radius: 12px;
+        border: 1px solid #cbd5e1;
+        padding: 0.75rem 1rem;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.08);
+      }
+
+      .filter-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .btn-admin {
+        min-height: 48px;
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+      }
+
+      .badge-soft {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 0.35rem 0.8rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .badge-type-top_up {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .badge-type-payment_out {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .badge-type-sale_in {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+
+      .table {
+        margin-bottom: 0;
+      }
+
+      .table thead th {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        color: #64748b;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        padding: 0.9rem;
+        text-transform: uppercase;
+      }
+
+      .table tbody tr {
+        transition: background-color 0.18s ease;
+      }
+
+      .table tbody tr:hover {
+        background: #f8fbff;
+      }
+
+      .table tbody td {
+        border-color: #e2e8f0;
+        padding: 1rem 0.9rem;
+        vertical-align: middle;
+      }
+
+      .cell-primary {
+        color: #0f172a;
+        font-weight: 600;
+      }
+
+      .cell-secondary {
+        color: #64748b;
+        font-size: 0.86rem;
+        margin-top: 0.15rem;
+      }
+
+      .numeric-cell {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .amount-positive {
+        color: #166534;
+        font-weight: 700;
+      }
+
+      .amount-negative {
+        color: #991b1b;
+        font-weight: 700;
+      }
+
+      .balance-pair {
+        display: grid;
+        gap: 0.35rem;
+      }
+
+      .balance-line {
+        align-items: center;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+      }
+
+      .balance-label {
+        color: #64748b;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .balance-value {
+        color: #0f172a;
+        font-size: 0.85rem;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .context-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.45rem;
+      }
+
+      .context-chip {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 999px;
+        color: #475569;
+        font-size: 0.76rem;
+        font-weight: 600;
+        padding: 0.2rem 0.55rem;
+      }
+
+      .pagination-wrap {
+        padding: 1rem 1.5rem 1.5rem;
+      }
+
+      .page-link {
+        border-radius: 10px;
+        border-color: #dbeafe;
+        color: #2563eb;
+        min-width: 42px;
+        text-align: center;
+      }
+
+      @media (max-width: 768px) {
+        .page-header,
+        .filter-card,
+        .table-header,
+        .pagination-wrap {
+          padding: 1rem;
+        }
+
+        .filter-actions {
+          justify-content: stretch;
+        }
+
+        .filter-actions .btn-admin {
+          flex: 1 1 auto;
+        }
+
+        .balance-line {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 0.15rem;
+        }
+      }
+    </style>
+
+    <div class="admin-page">
+      <div class="page-header">
+        <h1>Wallet Audit</h1>
+        <p>Audit top-ups, buyer debits, and seller credits with a cleaner record of where each balance change came from.</p>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="metric-card">
+            <div class="metric-label">Top-up Count</div>
+            <div class="metric-value" th:text="${stats.topUpEntries}">0</div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="metric-card">
+            <div class="metric-label">Buyer Debit Logs</div>
+            <div class="metric-value" th:text="${stats.paymentOutEntries}">0</div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="metric-card">
+            <div class="metric-label">Seller Credit Logs</div>
+            <div class="metric-value" th:text="${stats.saleInEntries}">0</div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+          <div class="metric-card">
+            <div class="metric-label">Total Wallet Logs</div>
+            <div class="metric-value" th:text="${stats.totalEntries}">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <form method="get" th:action="@{/admin/wallet-transactions}" class="row g-3 align-items-end">
+          <div class="col-12 col-lg-4">
+            <label for="keyword" class="form-label">Search</label>
+            <input id="keyword" name="keyword" class="form-control" placeholder="User, email, or note"
+              th:value="${currentKeyword}" />
+          </div>
+          <div class="col-12 col-md-6 col-lg-2">
+            <label for="type" class="form-label">Type</label>
+            <select id="type" name="type" class="form-select">
+              <option value="all" th:selected="${currentType == 'all'}">All types</option>
+              <option th:each="typeOption : ${walletTransactionTypes}" th:value="${#strings.toLowerCase(typeOption.name())}"
+                th:selected="${currentType == #strings.toLowerCase(typeOption.name())}"
+                th:text="${typeOption}">TYPE</option>
+            </select>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="filter-actions">
+              <button type="submit" class="btn btn-primary btn-admin flex-fill">
+                <i class="bi bi-funnel"></i>
+                <span>Apply Filters</span>
+              </button>
+              <a href="/admin/wallet-transactions" class="btn btn-outline-secondary btn-admin">Reset</a>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header d-flex justify-content-between align-items-center gap-3 flex-wrap">
+          <h3>Wallet Activity Log</h3>
+          <span class="table-header-meta" th:text="${#lists.size(walletTransactions) + ' entries on this page'}">0 entries on this page</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Balance</th>
+                <th>Context</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="entry : ${walletTransactions}">
+                <td class="cell-primary numeric-cell" th:text="${entry.id}">1</td>
+                <td>
+                  <div class="cell-primary" th:text="${entry.userNameSnapshot ?: entry.user.fullName}">User</div>
+                  <div class="cell-secondary" th:text="${entry.userEmailSnapshot ?: entry.user.email}">email@example.com</div>
+                </td>
+                <td>
+                  <span th:class="'badge-soft badge-type-' + ${#strings.toLowerCase(entry.type.name())}"
+                    th:text="${entry.type}">TYPE</span>
+                </td>
+                <td th:class="${entry.type == T(com.example.auctions.model.WalletTransactionType).PAYMENT_OUT ? 'amount-negative numeric-cell' : 'amount-positive numeric-cell'}"
+                  th:text="${(entry.type == T(com.example.auctions.model.WalletTransactionType).PAYMENT_OUT ? '-' : '+') + #numbers.formatInteger(entry.amount, 0, 'POINT') + ' VNĐ'}">
+                  0 VNĐ
+                </td>
+                <td class="numeric-cell">
+                  <div class="balance-pair">
+                    <div class="balance-line">
+                      <span class="balance-label">Before</span>
+                      <span class="balance-value" th:text="${#numbers.formatInteger(entry.balanceBefore, 0, 'POINT') + ' VNĐ'}">0 VNĐ</span>
+                    </div>
+                    <div class="balance-line">
+                      <span class="balance-label">After</span>
+                      <span class="balance-value" th:text="${#numbers.formatInteger(entry.balanceAfter, 0, 'POINT') + ' VNĐ'}">0 VNĐ</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-primary" th:text="${entry.description}">Description</div>
+                  <div class="context-meta">
+                    <span class="context-chip"
+                      th:text="${entry.relatedTransactionId != null ? 'Transaction ' + entry.relatedTransactionId : 'No transaction'}">
+                      Transaction 1
+                    </span>
+                    <span class="context-chip"
+                      th:text="${entry.relatedAuctionId != null ? 'Auction ' + entry.relatedAuctionId : 'No auction'}">
+                      Auction 1
+                    </span>
+                  </div>
+                </td>
+                <td class="numeric-cell" th:text="${#temporals.format(entry.createdAt, 'dd/MM/yyyy HH:mm')}">N/A</td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(walletTransactions)}">
+                <td colspan="7" class="text-center py-5 text-muted">No wallet entries matched your filters.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-wrap" th:if="${totalPages > 1}">
+          <nav aria-label="Wallet audit pagination">
+            <ul class="pagination justify-content-center mb-0" style="gap:0.5rem;">
+              <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/admin/wallet-transactions(page=${currentPage - 1}, keyword=${currentKeyword}, type=${currentType}, transactionId=${currentTransactionId}, auctionId=${currentAuctionId})}">
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+              </li>
+              <li class="page-item" th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                th:classappend="${pageNum == currentPage ? 'active' : ''}">
+                <a class="page-link" th:href="@{/admin/wallet-transactions(page=${pageNum}, keyword=${currentKeyword}, type=${currentType}, transactionId=${currentTransactionId}, auctionId=${currentAuctionId})}"
+                  th:text="${pageNum}">1</a>
+              </li>
+              <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/admin/wallet-transactions(page=${currentPage + 1}, keyword=${currentKeyword}, type=${currentType}, transactionId=${currentTransactionId}, auctionId=${currentAuctionId})}">
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+
+</html>

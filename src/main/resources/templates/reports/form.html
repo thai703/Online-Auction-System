@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main}">
+
+<head>
+    <title>Generate Report</title>
+    <style>
+        .report-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .report-form-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+
+        .report-header {
+            background: linear-gradient(135deg, #2563eb20 0%, #2563eb05 100%);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .report-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="%232563eb10"/></svg>') repeat;
+            opacity: 0.5;
+        }
+
+        .report-header h2 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .report-header p {
+            font-size: 1.1rem;
+            color: #3b82f6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+            display: block;
+            font-size: 1rem;
+        }
+
+        .form-control {
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+            padding: 1rem 1.25rem;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            background-color: #f8fafc;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            background-color: white;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 1rem 2.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            color: white;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .btn-generate::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-generate:hover::after {
+            opacity: 1;
+        }
+
+        .date-input-group {
+            position: relative;
+        }
+
+        .date-input-group i {
+            position: absolute;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 1.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .report-header {
+                padding: 2rem;
+            }
+
+            .report-form-container {
+                padding: 1.5rem;
+            }
+
+            .report-header h2 {
+                font-size: 1.75rem;
+            }
+
+            .report-header p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="report-container">
+            <div class="report-header">
+                <h2>Revenue Report</h2>
+                <p>Select a time range to view detailed reports</p>
+            </div>
+
+            <div class="report-form-container">
+                <form th:action="@{/reports/generate}" method="get">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="startDate">From Date</label>
+                                <div class="date-input-group">
+                                    <input type="datetime-local" class="form-control" id="startDate" name="startDate"
+                                        required>
+                                    <i class="bi bi-calendar3"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="endDate">To Date</label>
+                                <div class="date-input-group">
+                                    <input type="datetime-local" class="form-control" id="endDate" name="endDate"
+                                        required>
+                                    <i class="bi bi-calendar3"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-generate">
+                        <i class="bi bi-graph-up me-2"></i>Generate Report
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

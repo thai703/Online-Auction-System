@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+    <title>My Wallet - Auctions</title>
+</head>
+
+<body>
+    <main>
+        <style>
+            .wallet-container {
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 0 1rem;
+            }
+
+            .wallet-header {
+                background: linear-gradient(135deg, #4765c8 0%, #3b82f6 100%);
+                border-radius: 20px;
+                padding: 2.5rem;
+                margin-bottom: 2rem;
+                color: white;
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .wallet-header::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="%23FFFFFF10"/></svg>') repeat;
+                opacity: 0.5;
+            }
+
+            .wallet-header h2,
+            .wallet-header .balance-display {
+                position: relative;
+                z-index: 1;
+            }
+
+            .balance-display {
+                font-size: 2.5rem;
+                font-weight: 700;
+                margin: 1rem 0;
+            }
+
+            .topup-card {
+                background: white;
+                border-radius: 15px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+                border: 2px solid #e2e8f0;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            }
+
+            .topup-card h4 {
+                color: #2a49b2;
+                margin-bottom: 1.5rem;
+                font-weight: 600;
+            }
+
+            .history-card {
+                background: white;
+                border-radius: 15px;
+                padding: 2rem;
+                border: 2px solid #e2e8f0;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            }
+
+            .history-card h4 {
+                color: #1e40af;
+                margin-bottom: 1.5rem;
+                font-weight: 600;
+            }
+
+            .wt-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem;
+                border-bottom: 1px solid #e2e8f0;
+                transition: background 0.2s;
+            }
+
+            .wt-row:hover {
+                background: #f8fafc;
+            }
+
+            .wt-row:last-child {
+                border-bottom: none;
+            }
+
+            .wt-type {
+                padding: 0.35rem 0.75rem;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                font-weight: 600;
+            }
+
+            .wt-type-TOP_UP {
+                background: #dcfce7;
+                color: #166534;
+            }
+
+            .wt-type-PAYMENT_OUT {
+                background: #fee2e2;
+                color: #991b1b;
+            }
+
+            .wt-type-SALE_IN {
+                background: #dbeafe;
+                color: #1e40af;
+            }
+
+            .wt-amount-positive {
+                color: #166534;
+                font-weight: 700;
+            }
+
+            .wt-amount-negative {
+                color: #dc3545;
+                font-weight: 700;
+            }
+
+            .quick-amounts {
+                display: flex;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+                margin-bottom: 1rem;
+            }
+
+            .quick-amount-btn {
+                padding: 0.5rem 1rem;
+                border: 2px solid #0d6efd;
+                border-radius: 10px;
+                background: white;
+                color: #0d6efd;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .quick-amount-btn:hover {
+                background: #0d6efd;
+                color: white;
+            }
+        </style>
+
+        <div class="wallet-container">
+            <!-- Wallet Header -->
+            <div class="wallet-header">
+                <h2>My Wallet</h2>
+                <div class="balance-display" th:text="${#numbers.formatInteger(balance, 0, 'POINT') + ' VNĐ'}">0 VNĐ
+                </div>
+                <p>Current Balance</p>
+            </div>
+
+            <!-- Flash Messages -->
+            <div th:if="${walletSuccess}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>
+                <span th:text="${walletSuccess}">Success</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${walletError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                <span th:text="${walletError}">Error</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Top Up Form -->
+            <div class="topup-card">
+                <h4>Top up Wallet</h4>
+
+                <div class="quick-amounts">
+                    <button class="quick-amount-btn" onclick="setAmount(100000)">100.000</button>
+                    <button class="quick-amount-btn" onclick="setAmount(500000)">500.000</button>
+                    <button class="quick-amount-btn" onclick="setAmount(1000000)">1.000.000</button>
+                    <button class="quick-amount-btn" onclick="setAmount(5000000)">5.000.000</button>
+                    <button class="quick-amount-btn" onclick="setAmount(10000000)">10.000.000</button>
+                </div>
+
+                <form th:action="@{/wallet/top-up}" method="post" class="row g-3 align-items-end" onsubmit="return handleSubmit(this)">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <div class="col-md-8">
+                        <label for="amount" class="form-label fw-bold">Amount (VNĐ)</label>
+                        <input type="number" class="form-control form-control-lg" id="amount" name="amount" min="1000"
+                            step="1000" required placeholder="Enter top-up amount">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" id="topupBtn" class="btn btn-primary btn-lg w-100">
+                            Top up
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Wallet Transaction History -->
+            <div class="history-card">
+                <h4><i class="bi bi-clock-history me-2"></i>Wallet Transaction History</h4>
+
+                <div th:if="${#lists.isEmpty(walletTransactions)}" class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                    <p class="mt-2">No transactions yet</p>
+                </div>
+
+                <div th:if="${not #lists.isEmpty(walletTransactions)}">
+                    <div th:each="wt : ${walletTransactions}" class="wt-row">
+                        <div>
+                            <span th:class="'wt-type wt-type-' + ${wt.type}" th:text="${wt.type}">TYPE</span>
+                            <div class="mt-1 text-muted small" th:text="${wt.description}">Description</div>
+                            <div class="text-muted small"
+                                th:text="${#temporals.format(wt.createdAt, 'dd/MM/yyyy HH:mm')}">Date</div>
+                        </div>
+                        <div class="text-end">
+                            <div th:if="${wt.type.name() == 'PAYMENT_OUT'}" class="wt-amount-negative"
+                                th:text="'-' + ${#numbers.formatInteger(wt.amount, 0, 'POINT') + ' VNĐ'}">0 VNĐ</div>
+                            <div th:if="${wt.type.name() != 'PAYMENT_OUT'}" class="wt-amount-positive"
+                                th:text="'+' + ${#numbers.formatInteger(wt.amount, 0, 'POINT') + ' VNĐ'}">0 VNĐ</div>
+                            <div class="text-muted small"
+                                th:text="'Balance: ' + ${#numbers.formatInteger(wt.balanceAfter, 0, 'POINT') + ' VNĐ'}">
+                                Balance</div>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav th:if="${totalPages > 1}" class="mt-3">
+                        <ul class="pagination justify-content-center" style="gap:0.5rem;">
+                            <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/wallet(page=${currentPage - 1})}"
+                                    style="border-radius:10px;">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item" th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                                th:classappend="${pageNum == currentPage ? 'active' : ''}">
+                                <a class="page-link" th:href="@{/wallet(page=${pageNum})}" th:text="${pageNum}"
+                                    style="border-radius:10px;">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/wallet(page=${currentPage + 1})}"
+                                    style="border-radius:10px;">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function setAmount(val) {
+                document.getElementById('amount').value = val;
+            }
+
+            function handleSubmit(form) {
+                var btn = form.querySelector('#topupBtn');
+                if (btn.disabled) return false;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+                return true;
+            }
+        </script>
+    </main>
+</body>
+
+</html>

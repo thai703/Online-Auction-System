@@ -1,0 +1,21 @@
+# Log files
+*.log
+hs_err_pid*.log
+replay_pid*.log
+
+# MAVEN Build Directory
+target/
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# H2 Database files
+data/
+*.mv.db
+
+# Environment secrets
+.env
+.env.local
+.env.production

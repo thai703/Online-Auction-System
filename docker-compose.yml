@@ -1,0 +1,57 @@
+services:
+  app:
+    build: .
+    ports:
+      - "${APP_PORT:-8123}:8123"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:mysql://db:3306/auctions?useSSL=false&allowPublicKeyRetrieval=true
+      - DB_USERNAME=${DB_USERNAME:-auction_app}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - MAIL_HOST=${MAIL_HOST:-smtp.gmail.com}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - SERVER_URL=${SERVER_URL:-http://localhost:8123}
+      - UPLOAD_PATH=/data/auction-images
+      - WEBSOCKET_ALLOWED_ORIGINS=${WEBSOCKET_ALLOWED_ORIGINS:-*}
+      - ADMIN_BOOTSTRAP_ENABLED=${ADMIN_BOOTSTRAP_ENABLED:-false}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@auctions.local}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+      - VERIFICATION_ENABLED=${VERIFICATION_ENABLED:-true}
+    volumes:
+      - auction-images:/data/auction-images
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8123/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: auctions
+      MYSQL_USER: ${DB_USERNAME:-auction_app}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD is required}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  auction-images:

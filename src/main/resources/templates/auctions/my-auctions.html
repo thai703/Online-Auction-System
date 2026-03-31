@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+  <title>My Auctions - Auctions</title>
+</head>
+
+<body>
+  <main>
+    <style>
+      .auctions-header {
+        background: linear-gradient(135deg, #0d6efd20 0%, #0d6efd05 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .auction-card {
+        background: white;
+        border-radius: 15px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .auction-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .auction-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+      }
+
+      .auction-status {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
+
+      .auction-visibility {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.45rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+      }
+
+      .visibility-public {
+        background: rgba(219, 234, 254, 0.95);
+        color: #1d4ed8;
+      }
+
+      .visibility-private {
+        background: rgba(237, 233, 254, 0.95);
+        color: #6d28d9;
+      }
+
+      .status-draft {
+        background: #e9ecef;
+        color: #495057;
+      }
+
+      .status-active {
+        background: #d1e7dd;
+        color: #0f5132;
+      }
+
+      .status-ended {
+        background: #f8d7da;
+        color: #842029;
+      }
+
+      .status-cancelled {
+        background: #fff3cd;
+        color: #997404;
+      }
+
+      .auction-info {
+        padding: 1.5rem;
+      }
+
+      .auction-price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0d6efd;
+      }
+
+      .auction-time {
+        font-size: 0.875rem;
+        color: #6c757d;
+      }
+
+      .btn-auction {
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+      }
+
+      .btn-auction:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+      }
+
+      .no-auctions {
+        text-align: center;
+        padding: 3rem;
+        background: #f8f9fa;
+        border-radius: 15px;
+        margin-top: 2rem;
+      }
+
+      .no-auctions i {
+        font-size: 3rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+      }
+
+      .auction-note {
+        border-radius: 12px;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        color: #9a3412;
+        font-size: 0.875rem;
+        padding: 0.75rem 0.875rem;
+      }
+    </style>
+
+    <div class="auctions-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="mb-2">My Auctions</h2>
+          <p class="text-muted mb-0">Manage your auction listings</p>
+        </div>
+        <a href="/auctions/create" class="btn btn-primary btn-auction">
+          <i class="bi bi-plus-lg me-2"></i>Create New Auction
+        </a>
+      </div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="btn-group mb-4">
+      <a th:href="@{/auctions}" class="btn"
+        th:classappend="${currentStatus == null} ? 'btn-primary' : 'btn-outline-primary'">All</a>
+      <a th:href="@{/auctions(status=draft)}" class="btn"
+        th:classappend="${currentStatus == 'draft'} ? 'btn-primary' : 'btn-outline-primary'">Draft</a>
+      <a th:href="@{/auctions(status=active)}" class="btn"
+        th:classappend="${currentStatus == 'active'} ? 'btn-primary' : 'btn-outline-primary'">Active</a>
+      <a th:href="@{/auctions(status=cancelled)}" class="btn"
+        th:classappend="${currentStatus == 'cancelled'} ? 'btn-primary' : 'btn-outline-primary'">Cancelled</a>
+      <a th:href="@{/auctions(status=ended)}" class="btn"
+        th:classappend="${currentStatus == 'ended'} ? 'btn-primary' : 'btn-outline-primary'">Ended</a>
+    </div>
+
+    <!-- Auctions Grid -->
+    <div class="row g-4" th:if="${not #lists.isEmpty(auctions)}">
+      <div class="col-12 col-md-6 col-lg-4" th:each="auction : ${auctions}">
+        <div class="auction-card h-100">
+          <div class="position-relative">
+            <img th:if="${auction.image}" th:src="@{'/images/auctions/' + ${auction.image}}"
+              th:alt="${auction.productName}" class="auction-image" />
+            <img th:unless="${auction.image}" src="/images/placeholder.jpg" th:alt="${auction.productName}"
+              class="auction-image" />
+            <span th:class="'auction-visibility visibility-' + ${#strings.toLowerCase(auction.visibility.name())}">
+              <i th:class="${auction.visibility.name() == 'PRIVATE'} ? 'bi bi-lock-fill' : 'bi bi-globe2'"></i>
+              <span th:text="${auction.visibility}">PUBLIC</span>
+            </span>
+            <span th:class="'auction-status ' + 'status-' + ${#strings.toLowerCase(auction.status)}"
+              th:text="${auction.status}">Status</span>
+          </div>
+          <div class="auction-info d-flex flex-column">
+            <h5 class="mb-2" th:text="${auction.productName}">
+              Product Name
+            </h5>
+            <p class="text-muted mb-3" th:text="${#strings.abbreviate(auction.description, 100)}">
+              Description
+            </p>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="price-label">Starting Price:</div>
+              <div class="auction-price"
+                th:text="${#numbers.formatInteger(auction.startingPrice, 0, 'POINT') + ' VNĐ'}">
+                0 VNĐ
+              </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="auction-time">
+                <i class="bi bi-clock me-1"></i>
+                <span th:if="${auction.status.name() == 'DRAFT'}">Not started</span>
+                <span th:if="${auction.status.name() != 'DRAFT'}"
+                  th:text="${'Ends: ' + #temporals.format(auction.endTime, 'dd MMM yyyy HH:mm')}">End Time</span>
+              </div>
+            </div>
+            <div class="mt-auto">
+              <div th:if="${auction.status.name() == 'DRAFT'}" class="d-flex flex-column gap-2">
+                <a th:href="@{'/auctions/' + ${auction.id}}" class="btn btn-primary btn-sm w-100"><i
+                    class="bi bi-eye me-1"></i>View Details</a>
+                <div class="d-flex gap-2">
+                  <a th:href="@{'/auctions/edit/' + ${auction.id}}" class="btn btn-outline-primary btn-sm w-50">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                  </a>
+                  <form th:action="@{'/auctions/delete/' + ${auction.id}}" method="post" class="w-50 m-0 p-0">
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100"
+                      onclick="return confirm('Are you sure you want to delete this auction?')">
+                      <i class="bi bi-trash me-1"></i>Delete
+                    </button>
+                  </form>
+                </div>
+              </div>
+              <div
+                th:if="${auction.status.name() == 'ACTIVE' || auction.status.name() == 'CANCELLED' || auction.status.name() == 'ENDED'}"
+                class="d-flex flex-column gap-2">
+                <a th:href="@{'/auctions/' + ${auction.id}}" class="btn btn-primary btn-sm w-100"><i
+                    class="bi bi-eye me-1"></i>View Details</a>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Pagination -->
+    <nav aria-label="Page navigation" class="mt-4" th:if="${totalPages > 1}">
+      <ul class="pagination justify-content-center" style="gap:0.5rem;">
+        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+          <a class="page-link" th:href="@{/auctions(page=${currentPage - 1}, status=${currentStatus})}"
+            aria-label="Previous" style="border-radius:10px;">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+        </li>
+
+        <li class="page-item" th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+          th:classappend="${pageNum == currentPage} ? 'active'">
+          <a class="page-link" th:href="@{/auctions(page=${pageNum}, status=${currentStatus})}" th:text="${pageNum}"
+            style="border-radius:10px;">1</a>
+        </li>
+
+        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+          <a class="page-link" th:href="@{/auctions(page=${currentPage + 1}, status=${currentStatus})}"
+            aria-label="Next" style="border-radius:10px;">
+            <i class="bi bi-chevron-right"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- No Auctions Message -->
+    <div th:if="${#lists.isEmpty(auctions)}" class="no-auctions">
+      <i class="bi bi-inbox"></i>
+      <h4>No Auctions Found</h4>
+      <p class="text-muted">You haven't created any auctions yet.</p>
+      <a href="/auctions/create" class="btn btn-primary btn-auction mt-3">
+        Create Your First Auction
+      </a>
+    </div>
+  </main>
+</body>
+
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+    <title>Auction Bids Management - Auctions</title>
+</head>
+
+<body>
+    <main>
+        <style>
+            .management-header {
+                background: linear-gradient(135deg, #0d6efd20 0%, #0d6efd05 100%);
+                border-radius: 20px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .auction-section {
+                background: white;
+                border-radius: 15px;
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+                margin-bottom: 2rem;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            }
+
+            .auction-header {
+                padding: 1.5rem;
+                background: #f8f9fa;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .auction-stats {
+                display: flex;
+                gap: 2rem;
+                padding: 1rem;
+                background: #fff;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .stat-item {
+                flex: 1;
+                text-align: center;
+                padding: 1rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #0d6efd;
+                margin-bottom: 0.5rem;
+            }
+
+            .stat-label {
+                color: #6c757d;
+                font-size: 0.875rem;
+            }
+
+            .bid-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem 1.5rem;
+                border-bottom: 1px solid #e9ecef;
+                transition: background-color 0.3s ease;
+            }
+
+            .bid-item:last-child {
+                border-bottom: none;
+            }
+
+            .bid-item:hover {
+                background-color: #f8f9fa;
+            }
+
+            .bid-amount {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #0d6efd;
+            }
+
+            .bid-info {
+                color: #6c757d;
+                font-size: 0.875rem;
+            }
+
+            .highest-bid {
+                background: #d1e7dd;
+            }
+
+            .highest-bid:hover {
+                background: #c2e0d4;
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 3rem;
+                background: white;
+                border-radius: 15px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            }
+
+            .empty-state i {
+                font-size: 4rem;
+                color: #6c757d;
+                margin-bottom: 1rem;
+            }
+
+            .auction-status {
+                display: inline-block;
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                font-weight: 600;
+                font-size: 0.875rem;
+            }
+
+            .status-active {
+                background: #d1e7dd;
+                color: #0f5132;
+            }
+
+            .status-ended {
+                background: #f8d7da;
+                color: #842029;
+            }
+
+            .time-remaining {
+                color: #6c757d;
+                font-size: 0.875rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .winner-info {
+                background: #fff3cd;
+                border-radius: 10px;
+                padding: 0.75rem 1.25rem;
+                margin-top: 0.5rem;
+                font-size: 0.9rem;
+            }
+
+            .bid-order-note {
+                padding: 0.9rem 1.5rem 0.6rem;
+                font-size: 0.85rem;
+                color: #6c757d;
+                border-bottom: 1px solid #e9ecef;
+                background: #fcfdff;
+            }
+
+            .pagination-wrap {
+                margin-top: 2rem;
+            }
+        </style>
+
+        <div class="management-header">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mb-0">Auction Bids Management</h1>
+                    <a href="/auctions" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to My Auctions
+                    </a>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="btn-group mb-4">
+                    <a th:href="@{/auctions/management/bids(status=all)}" class="btn"
+                        th:classappend="${currentStatus == 'all'} ? 'btn-primary' : 'btn-outline-primary'">All</a>
+                    <a th:href="@{/auctions/management/bids(status=active)}" class="btn"
+                        th:classappend="${currentStatus == 'active'} ? 'btn-primary' : 'btn-outline-primary'">Active</a>
+                    <a th:href="@{/auctions/management/bids(status=ended)}" class="btn"
+                        th:classappend="${currentStatus == 'ended'} ? 'btn-primary' : 'btn-outline-primary'">Ended</a>
+                </div>
+
+                <!-- Empty State -->
+                <div th:if="${#lists.isEmpty(auctions)}" class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <h3>No Auctions Found</h3>
+                    <p class="text-muted">No auctions match the selected filter.</p>
+                    <a href="/auctions/create" class="btn btn-primary mt-3">
+                        Create New Auction
+                    </a>
+                </div>
+
+                <!-- Auctions List -->
+                <div th:if="${not #lists.isEmpty(auctions)}">
+                    <div th:each="auction : ${auctions}" class="auction-section">
+                        <div class="auction-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 class="mb-2" th:text="${auction.productName}">Product Name</h4>
+                                <div class="time-remaining">
+                                    <i class="bi bi-clock"></i>
+                                    <span th:if="${auction.status.name() == 'ACTIVE'}"
+                                        th:text="${'Ends: ' + #temporals.format(auction.endTime, 'dd MMM yyyy HH:mm')}">End
+                                        Time</span>
+                                    <span th:if="${auction.status.name() == 'ENDED'}"
+                                        th:text="${'Ended: ' + #temporals.format(auction.endTime, 'dd MMM yyyy HH:mm')}">End
+                                        Time</span>
+                                </div>
+                                <!-- Winner info for ended auctions -->
+                                <div th:if="${auction.status.name() == 'ENDED' && auction.winner != null}"
+                                    class="winner-info">
+                                    <i class="bi bi-trophy-fill text-warning me-1"></i>
+                                    Winner: <strong th:text="${auction.winner.fullName}">Winner Name</strong>
+                                    — Final Price: <strong
+                                        th:text="${#numbers.formatInteger(auction.currentPrice, 0, 'POINT') + ' VNĐ'}">0
+                                        VNĐ</strong>
+                                </div>
+                            </div>
+                            <span th:class="'auction-status status-' + ${#strings.toLowerCase(auction.status)}"
+                                th:text="${auction.status}">Status</span>
+                        </div>
+
+                        <div class="auction-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" th:text="${auction.bids.size()}">0</div>
+                                <div class="stat-label">Total Bids</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value"
+                                    th:text="${#numbers.formatInteger(auction.currentPrice, 0, 'POINT') + ' VNĐ'}">0 VNĐ
+                                </div>
+                                <div class="stat-label"
+                                    th:text="${auction.status.name() == 'ENDED' ? 'Final Price' : 'Current Price'}">
+                                    Current Price</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" th:text="${auction.uniqueBidders}">0</div>
+                                <div class="stat-label">Unique Bidders</div>
+                            </div>
+                        </div>
+
+                        <!-- Bids List -->
+                        <div th:if="${#lists.isEmpty(auction.bids)}" class="p-4 text-center text-muted">
+                            No bids for this auction.
+                        </div>
+
+                        <div th:if="${not #lists.isEmpty(auction.bids)}">
+
+                            <div th:each="bid, iterStat : ${auction.bids}"
+                                th:class="${iterStat.first ? 'bid-item highest-bid' : 'bid-item'}">
+                                <div>
+                                    <div class="bid-amount"
+                                        th:text="${#numbers.formatInteger(bid.amount, 0, 'POINT') + ' VNĐ'}">100 VNĐ
+                                    </div>
+                                    <div class="bid-info">
+                                        <span th:text="${bid.bidderNameSnapshot ?: bid.bidder.fullName}">Bidder
+                                            Name</span> •
+                                        <span th:text="${#temporals.format(bid.bidTime, 'dd MMM yyyy HH:mm')}">Bid
+                                            Time</span>
+                                    </div>
+                                </div>
+                                <div th:if="${iterStat.first}" class="badge bg-success">
+                                    <span
+                                        th:text="${auction.status.name() == 'ENDED' ? 'Winning Bid' : 'Highest Bid'}">Highest
+                                        Bid</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pagination-wrap" th:if="${totalPages > 1}">
+                        <nav aria-label="Auction bids management pagination">
+                            <ul class="pagination justify-content-center mb-0" style="gap:0.5rem;">
+                                <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+                                    <a class="page-link"
+                                        th:href="@{/auctions/management/bids(page=${currentPage - 1}, status=${currentStatus})}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item" th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                                    th:classappend="${pageNum == currentPage ? 'active' : ''}">
+                                    <a class="page-link"
+                                        th:href="@{/auctions/management/bids(page=${pageNum}, status=${currentStatus})}"
+                                        th:text="${pageNum}">1</a>
+                                </li>
+                                <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+                                    <a class="page-link"
+                                        th:href="@{/auctions/management/bids(page=${currentPage + 1}, status=${currentStatus})}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

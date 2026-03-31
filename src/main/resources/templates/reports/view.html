@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/main}">
+
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+  <title>Revenue Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
+    integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" crossorigin="anonymous"></script>
+  <style>
+    .report-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .report-header {
+      background: linear-gradient(135deg, #2563eb20 0%, #2563eb05 100%);
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin-bottom: 2.5rem;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .report-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="%232563eb10"/></svg>') repeat;
+      opacity: 0.5;
+    }
+
+    .report-header h2 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      border: 2px solid #e2e8f0;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      border-color: #3b82f6;
+    }
+
+    .stat-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      margin: 0 auto 1.5rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: #64748b;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .chart-container {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      border: 2px solid #e2e8f0;
+      margin-bottom: 2.5rem;
+    }
+
+    .chart-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1e40af;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .table-container {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      border: 2px solid #e2e8f0;
+      margin-bottom: 2.5rem;
+      overflow-x: auto;
+    }
+
+    .report-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .report-table th,
+    .report-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .report-table th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #1e40af;
+    }
+
+    .report-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .report-table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .date-range {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background: rgba(37, 99, 235, 0.1);
+      border-radius: 15px;
+      color: #2563eb;
+      font-weight: 500;
+      font-size: 1.1rem;
+      border: 2px solid rgba(37, 99, 235, 0.1);
+    }
+
+    .btn-new-report {
+      background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+      border: none;
+      border-radius: 15px;
+      padding: 1rem 2.5rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-new-report:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.25);
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .report-header {
+        padding: 2rem;
+      }
+
+      .stat-card {
+        padding: 1.5rem;
+      }
+
+      .chart-container,
+      .table-container {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div layout:fragment="content">
+    <div class="report-container">
+      <div class="report-header">
+        <h2>Revenue Report</h2>
+        <div class="date-range">
+          <i class="bi bi-calendar3 me-2"></i>
+          <span th:text="${#temporals.format(startDate, 'dd/MM/yyyy HH:mm')}"></span>
+          <i class="bi bi-arrow-right mx-2"></i>
+          <span th:text="${#temporals.format(endDate, 'dd/MM/yyyy HH:mm')}"></span>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="bi bi-currency-dollar"></i>
+          </div>
+          <div class="stat-value" th:text="${#numbers.formatInteger(report.totalRevenue, 0, 'POINT')} + ' VNĐ'">0 VNĐ
+          </div>
+          <div class="stat-label">Total Revenue</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="bi bi-box-seam"></i>
+          </div>
+          <div class="stat-value" th:text="${report.totalSoldItems}">0</div>
+          <div class="stat-label">Items Sold</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="bi bi-hammer"></i>
+          </div>
+          <div class="stat-value" th:text="${report.totalAuctionsCreated}">0</div>
+          <div class="stat-label">Auctions Created</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <div class="chart-container">
+            <div class="chart-title">Revenue Statistics</div>
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+        <div class="col-md-6 mb-4">
+          <div class="chart-container">
+            <div class="chart-title">Auction Sessions</div>
+            <canvas id="auctionsChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Value</th>
+              <th>vs Previous Period</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Total Revenue</td>
+              <td th:text="${#numbers.formatInteger(report.totalRevenue, 0, 'POINT')} + ' VNĐ'">0 VNĐ</td>
+              <td><span class="text-success">↑ 15%</span></td>
+            </tr>
+            <tr>
+              <td>Items Sold</td>
+              <td th:text="${report.totalSoldItems}">0</td>
+              <td><span class="text-success">↑ 8%</span></td>
+            </tr>
+            <tr>
+              <td>Auction Sessions</td>
+              <td th:text="${report.totalAuctionsCreated}">0</td>
+              <td><span class="text-danger">↓ 3%</span></td>
+            </tr>
+            <tr>
+              <td>Avg Bidders Per Auction</td>
+              <td th:text="${#numbers.formatInteger(report.averageBiddersPerAuction, 0)}">0</td>
+              <td><span class="text-success">↑ 12%</span></td>
+            </tr>
+            <tr>
+              <td>Average Item Price</td>
+              <td th:text="${#numbers.formatInteger(report.averageItemPrice, 0, 'POINT')} + ' VNĐ'">0 VNĐ</td>
+              <td><span class="text-success">↑ 5%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="text-center">
+        <a th:href="@{/reports}" class="btn btn-new-report"> <i class="bi bi-plus-circle me-2"></i>Create New Report
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script th:inline="javascript">
+    // Lay du lieu tu Thymeleaf
+    const totalRevenue = /*[[${report.totalRevenue}]]*/ 0;
+    const totalAuctions = /*[[${report.totalAuctionsCreated}]]*/ 0;
+
+    // Du lieu cho bieu do doanh thu
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(revenueCtx, {
+      type: 'line',
+      data: {
+        labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6'],
+        datasets: [
+          {
+            label: 'Revenue (VNĐ)',
+            data: [12000000, 19000000, 15000000, 25000000, 22000000, totalRevenue],
+            borderColor: '#3b82f6',
+            tension: 0.4,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+        },
+      },
+    });
+
+    // Du lieu cho bieu do dau gia
+    const auctionsCtx = document.getElementById('auctionsChart').getContext('2d');
+    new Chart(auctionsCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Ended', 'Ongoing', 'Starting Soon'],
+        datasets: [
+          {
+            label: 'Session Count',
+            data: [totalAuctions, 8, 5],
+            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+        },
+      },
+    });
+  </script>
+</body>
+
+</html>

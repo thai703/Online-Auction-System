@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+    <title>Verify Your Account - Auctions</title>
+</head>
+
+<body>
+    <main>
+        <style>
+            .verify-wrapper {
+                min-height: calc(100vh - 250px);
+                background: linear-gradient(135deg, #0d6efd20 0%, #0d6efd05 100%);
+                border-radius: 0 0 50px 50px;
+            }
+
+            .verify-card {
+                background: rgba(255, 255, 255, 0.95);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 20px;
+                overflow: hidden;
+            }
+
+            .verify-header {
+                background: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);
+                padding: 2rem;
+                text-align: center;
+                color: white;
+            }
+
+            .verify-header .icon {
+                font-size: 3rem;
+            }
+
+            .verify-header h3 {
+                font-size: 1.8rem;
+                margin: 0;
+            }
+
+            .verify-body {
+                padding: 2.5rem;
+                text-align: center;
+            }
+
+            .code-input {
+                font-size: 2rem;
+                letter-spacing: 0.5rem;
+                text-align: center;
+                font-family: 'Courier New', Courier, monospace;
+                font-weight: bold;
+                border-radius: 10px;
+                border: 2px solid #e0e0e0;
+            }
+
+            .code-input:focus {
+                border-color: #0d6efd;
+                box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+            }
+
+            .btn-verify {
+                border-radius: 10px;
+                padding: 0.75rem 1.5rem;
+                font-weight: 600;
+                background: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);
+                border: none;
+                transition: all 0.3s ease;
+            }
+
+            .btn-verify:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+            }
+        </style>
+
+        <div class="verify-wrapper py-5">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-6 col-lg-5">
+                        <div class="verify-card">
+                            <div class="verify-header">
+                                <h3>Enter Verification Code</h3>
+                            </div>
+                            <div class="verify-body">
+                                <p class="text-muted mb-1">We sent a 5-digit code to</p>
+                                <strong class="text-dark d-block mb-4" th:text="${email}">user@example.com</strong>
+
+                                <div th:if="${verifyError}" class="alert alert-danger mb-3">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    <span th:text="${verifyError}">Invalid code</span>
+                                </div>
+                                <div th:if="${resent}" class="alert alert-success mb-3">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    <span th:text="${resent}">Code resent</span>
+                                </div>
+
+                                <form th:action="@{/register/verify}" method="post">
+                                    <input type="hidden" name="email" th:value="${email}">
+                                    <div class="mb-4">
+                                        <input type="text" class="form-control form-control-lg code-input" id="code"
+                                            name="code" placeholder="_ _ _ _ _" maxlength="5" pattern="\d{5}" required
+                                            autocomplete="off" autofocus>
+                                        <div class="form-text mt-2">Enter the 5-digit code from your email.</div>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-verify">
+                                            </i>Verify Account
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div class="mt-4 pt-3 border-top text-muted small">
+                                    Didn't receive it? 
+                                    <form th:action="@{/register/resend}" method="post" class="d-inline">
+                                        <input type="hidden" name="email" th:value="${email}">
+                                        <button type="submit" class="btn btn-link p-0 m-0 align-baseline text-decoration-none small fw-bold">Resend verification code</button>
+                                    </form>
+                                    <br>
+                                    Or check your <strong>Spam</strong> folder, or <a href="/login">return to Login</a>.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

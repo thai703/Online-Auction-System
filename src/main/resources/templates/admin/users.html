@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+  <title>Admin Users - Auctions</title>
+</head>
+
+<body>
+  <main>
+    <style>
+      .admin-page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1rem 2.5rem;
+      }
+
+      .page-header {
+        background: linear-gradient(135deg, #2563eb18 0%, #eff6ff 100%);
+        border: 1px solid #dbeafe;
+        border-radius: 20px;
+        padding: 1.5rem 1.75rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 12px 30px rgba(37, 99, 235, 0.08);
+      }
+
+      .page-header h1 {
+        color: #1e40af;
+        font-size: clamp(1.95rem, 3vw, 2.45rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin-bottom: 0.4rem;
+      }
+
+      .page-header p {
+        color: #64748b;
+        margin-bottom: 0;
+        max-width: 720px;
+      }
+
+      .filter-card,
+      .table-card {
+        background: #fff;
+        border: 1px solid #dbeafe;
+        border-radius: 20px;
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
+      }
+
+      .filter-card {
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .table-card {
+        overflow: hidden;
+      }
+
+      .table-header {
+        padding: 1.15rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: linear-gradient(180deg, #f8fbff 0%, #f8fafc 100%);
+      }
+
+      .table-header h3 {
+        color: #1e40af;
+        font-size: 1.45rem;
+        font-weight: 650;
+        margin: 0;
+      }
+
+      .table-header-meta {
+        color: #64748b;
+        font-size: 0.9rem;
+      }
+
+      .form-label {
+        color: #475569;
+        font-size: 0.83rem;
+        font-weight: 600;
+        margin-bottom: 0.45rem;
+      }
+
+      .form-control,
+      .form-select {
+        min-height: 48px;
+        border-radius: 12px;
+        border: 1px solid #cbd5e1;
+        padding: 0.75rem 1rem;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.08);
+      }
+
+      .filter-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .btn-admin {
+        min-height: 48px;
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+      }
+
+      .btn-sm.btn-admin {
+        min-height: auto;
+        padding: 0.5rem 0.9rem;
+      }
+
+      .btn-access-disable {
+        background: #fff;
+        border: 1px solid #fca5a5;
+        color: #b91c1c;
+      }
+
+      .btn-access-disable:hover {
+        background: #fef2f2;
+        color: #991b1b;
+      }
+
+      .btn-access-enable {
+        background: #fff;
+        border: 1px solid #86efac;
+        color: #166534;
+      }
+
+      .btn-access-enable:hover {
+        background: #f0fdf4;
+        color: #166534;
+      }
+
+      .badge-soft {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 0.35rem 0.8rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .badge-role-admin {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+
+      .badge-role-seller {
+        background: #ede9fe;
+        color: #6d28d9;
+      }
+
+      .badge-role-buyer {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .badge-status-enabled {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .badge-status-disabled {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .table {
+        margin-bottom: 0;
+      }
+
+      .table thead th {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        color: #64748b;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        padding: 0.9rem;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .table tbody tr {
+        transition: background-color 0.18s ease;
+      }
+
+      .table tbody tr:hover {
+        background: #f8fbff;
+      }
+
+      .table tbody td {
+        border-color: #e2e8f0;
+        padding: 1rem 0.9rem;
+        vertical-align: middle;
+      }
+
+      .cell-primary {
+        color: #0f172a;
+        font-weight: 600;
+      }
+
+      .cell-secondary {
+        color: #64748b;
+        font-size: 0.86rem;
+        margin-top: 0.15rem;
+      }
+
+      .numeric-cell {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .money-cell {
+        color: #0f172a;
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .admin-self-label {
+        color: #475569;
+        font-size: 0.84rem;
+        font-weight: 600;
+      }
+
+      .pagination-wrap {
+        padding: 1rem 1.5rem 1.5rem;
+      }
+
+      .page-link {
+        border-radius: 10px;
+        border-color: #dbeafe;
+        color: #2563eb;
+        min-width: 42px;
+        text-align: center;
+      }
+
+      @media (max-width: 768px) {
+        .page-header,
+        .filter-card,
+        .table-header,
+        .pagination-wrap {
+          padding: 1rem;
+        }
+
+        .filter-actions {
+          justify-content: stretch;
+        }
+
+        .filter-actions .btn-admin {
+          flex: 1 1 auto;
+        }
+      }
+    </style>
+
+    <div class="admin-page">
+      <div class="page-header">
+        <h1>User Management</h1>
+        <p>Search accounts, review wallet balances, and control who can access the platform.</p>
+      </div>
+
+      <div class="filter-card">
+        <form method="get" th:action="@{/admin/users}" class="row g-3 align-items-end">
+          <div class="col-12 col-lg-5">
+            <label for="keyword" class="form-label">Search</label>
+            <input id="keyword" name="keyword" class="form-control" placeholder="Name or email"
+              th:value="${currentKeyword}" />
+          </div>
+          <div class="col-12 col-md-6 col-lg-3">
+            <label for="role" class="form-label">Role</label>
+            <select id="role" name="role" class="form-select">
+              <option value="all" th:selected="${currentRole == 'all'}">All roles</option>
+              <option th:each="roleOption : ${userRoles}"
+                th:value="${#strings.toLowerCase(roleOption.name())}"
+                th:selected="${currentRole == #strings.toLowerCase(roleOption.name())}"
+                th:text="${roleOption}">ROLE</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-6 col-lg-2">
+            <label for="enabled" class="form-label">Status</label>
+            <select id="enabled" name="enabled" class="form-select">
+              <option value="all" th:selected="${currentEnabled == 'all'}">All access states</option>
+              <option value="enabled" th:selected="${currentEnabled == 'enabled'}">Enabled</option>
+              <option value="disabled" th:selected="${currentEnabled == 'disabled'}">Disabled</option>
+            </select>
+          </div>
+          <div class="col-12 col-lg-2">
+            <div class="filter-actions">
+              <button type="submit" class="btn btn-primary btn-admin flex-fill">
+                <i class="bi bi-funnel"></i>
+                <span>Apply Filters</span>
+              </button>
+              <a href="/admin/users" class="btn btn-outline-secondary btn-admin">Reset</a>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header d-flex justify-content-between align-items-center gap-3 flex-wrap">
+          <h3>User Directory</h3>
+          <span class="table-header-meta" th:text="${#lists.size(users) + ' users on this page'}">0 users on this page</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Account</th>
+                <th>Role</th>
+                <th class="text-end">Wallet</th>
+                <th>Access</th>
+                <th class="text-end">Controls</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="account : ${users}">
+                <td class="cell-primary numeric-cell" th:text="${account.id}">1</td>
+                <td>
+                  <div class="cell-primary" th:text="${account.fullName != null && !account.fullName.isBlank() ? account.fullName : 'Unnamed user'}">User Name</div>
+                  <div class="cell-secondary" th:text="${account.email != null && !account.email.isBlank() ? account.email : 'No email available'}">user@example.com</div>
+                  <div class="cell-secondary" th:text="${account.phoneNumber != null && !account.phoneNumber.isBlank() ? account.phoneNumber : 'No phone number'}">0000000000</div>
+                </td>
+                <td>
+                  <span class="badge-soft"
+                    th:classappend="${account.role != null ? ' badge-role-' + #strings.toLowerCase(account.role.name()) : ''}"
+                    th:text="${account.role != null ? account.role : 'UNKNOWN'}">ROLE</span>
+                </td>
+                <td class="money-cell"
+                  th:text="${account.balance != null ? #numbers.formatInteger(account.balance, 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">0 VNĐ</td>
+                <td>
+                  <span class="badge-soft"
+                    th:classappend="${account.enabled ? ' badge-status-enabled' : ' badge-status-disabled'}"
+                    th:text="${account.enabled ? 'Enabled' : 'Disabled'}">Enabled</span>
+                </td>
+                <td class="text-end">
+                  <div class="d-inline-flex flex-wrap justify-content-end gap-2">
+                  <a th:href="@{/admin/users/{id}(id=${account.id}, page=${currentPage}, keyword=${currentKeyword}, role=${currentRole}, enabled=${currentEnabled})}"
+                    class="btn btn-sm btn-outline-primary btn-admin">
+                    <i class="bi bi-eye me-1"></i>View Details
+                  </a>
+                  <form th:if="${account.id != currentAdminId and (account.role != T(com.example.auctions.model.UserRole).ADMIN or !account.enabled)}" th:action="@{'/admin/users/' + ${account.id} + '/toggle-status'}"
+                    method="post" class="d-inline">
+                    <input type="hidden" name="page" th:value="${currentPage}" />
+                    <input type="hidden" name="keyword" th:value="${currentKeyword}" />
+                    <input type="hidden" name="role" th:value="${currentRole}" />
+                    <input type="hidden" name="enabled" th:value="${currentEnabled}" />
+                    <button type="submit" class="btn btn-sm btn-admin"
+                      th:classappend="${account.enabled ? ' btn-access-disable' : ' btn-access-enable'}"
+                      th:text="${account.enabled ? 'Disable Access' : 'Enable Access'}">Toggle</button>
+                  </form>
+                  <span th:if="${account.id == currentAdminId}" class="admin-self-label">Signed in admin</span>
+                  <span th:if="${account.id != currentAdminId and account.role == T(com.example.auctions.model.UserRole).ADMIN and account.enabled}"
+                    class="admin-self-label">Protected admin</span>
+                  </div>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(users)}">
+                <td colspan="6" class="text-center py-5 text-muted">No users matched your filters.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-wrap" th:if="${totalPages > 1}">
+          <nav aria-label="Users pagination">
+            <ul class="pagination justify-content-center mb-0" style="gap:0.5rem;">
+              <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/admin/users(page=${currentPage - 1}, keyword=${currentKeyword}, role=${currentRole}, enabled=${currentEnabled})}">
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+              </li>
+              <li class="page-item" th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                th:classappend="${pageNum == currentPage ? 'active' : ''}">
+                <a class="page-link"
+                  th:href="@{/admin/users(page=${pageNum}, keyword=${currentKeyword}, role=${currentRole}, enabled=${currentEnabled})}"
+                  th:text="${pageNum}">1</a>
+              </li>
+              <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/admin/users(page=${currentPage + 1}, keyword=${currentKeyword}, role=${currentRole}, enabled=${currentEnabled})}">
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+
+</html>

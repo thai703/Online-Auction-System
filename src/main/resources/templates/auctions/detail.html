@@ -1,0 +1,13 @@
+<!-- Winner Actions -->
+<div th:if="${auction.status == T(com.example.auctions.model.AuctionStatus).ENDED and auction.winner != null and auction.winner.id == #authentication.principal.id}" class="mt-4">
+    <div class="alert alert-success">
+        <i class="bi bi-trophy-fill me-2"></i>
+        Congratulations! You've won this auction!
+    </div>
+    <form th:action="@{/transactions/create/{auctionId}(auctionId=${auction.id})}" method="post">
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-credit-card me-2"></i>
+            Proceed to Payment
+        </button>
+    </form>
+</div> 

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::title}, ~{::main})}">
+
+<head>
+  <title>Complete Google Sign-In - Auctions</title>
+</head>
+
+<body>
+  <main>
+    <style>
+      .auth-wrapper {
+        min-height: calc(100vh - 250px);
+        background: linear-gradient(135deg, #0d6efd20 0%, #0d6efd05 100%);
+        border-radius: 0 0 50px 50px;
+      }
+
+      .auth-card {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+      }
+
+      .auth-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);
+        padding: 2rem;
+        text-align: center;
+        color: white;
+      }
+
+      .auth-header h3 {
+        font-size: 2rem;
+        margin: 0 0 0.5rem;
+      }
+
+      .auth-header p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      .auth-body {
+        padding: 2.5rem;
+      }
+
+      .profile-source {
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1d4ed8;
+        margin-bottom: 1.5rem;
+      }
+
+      .form-control,
+      .form-select {
+        border-radius: 10px;
+        padding: 0.85rem 1rem;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+      }
+
+      .btn-auth {
+        border-radius: 10px;
+        padding: 0.85rem 1.5rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);
+        border: none;
+        transition: all 0.3s ease;
+      }
+
+      .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+      }
+
+      .text-danger {
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .helper-note {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+      }
+
+      .locked-field {
+        align-items: center;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        color: #0f172a;
+        display: flex;
+        gap: 0.75rem;
+        min-height: 56px;
+        padding: 0.85rem 1rem;
+      }
+
+      .locked-field i {
+        color: #0d6efd;
+        font-size: 1rem;
+      }
+
+      .locked-field-value {
+        font-weight: 600;
+        overflow-wrap: anywhere;
+      }
+    </style>
+
+    <div class="auth-wrapper py-5">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-md-8 col-lg-6">
+            <div class="auth-card">
+              <div class="auth-header">
+                <i class="bi bi-google fs-1 d-block mb-3"></i>
+                <h3>Complete Google Sign-In</h3>
+                <p>Choose your role and finish the profile details we need for the auction platform.</p>
+              </div>
+
+              <div class="auth-body">
+                <div class="profile-source">
+                  <div class="fw-semibold mb-1">Google account connected</div>
+                  <div th:text="${googleEmail}">email@example.com</div>
+                </div>
+
+                <form th:action="@{/oauth2/onboarding}" th:object="${onboardingForm}" method="post">
+                  <div class="mb-4">
+                    <label class="form-label fw-semibold">Google Email</label>
+                    <div class="locked-field" aria-label="Google Email">
+                      <i class="bi bi-envelope-lock"></i>
+                      <span class="locked-field-value" th:text="${googleEmail}">email@example.com</span>
+                    </div>
+                    <div class="helper-note">This email comes from your Google account and will be used to sign in later.</div>
+                  </div>
+
+                  <div class="mb-4">
+                    <label for="fullName" class="form-label fw-semibold">Full Name</label>
+                    <input type="text" class="form-control" id="fullName" th:field="*{fullName}" required />
+                    <div class="helper-note">We prefilled your Google display name. You can edit it before continuing.</div>
+                    <div class="text-danger" th:if="${#fields.hasErrors('fullName')}">
+                      <i class="bi bi-exclamation-circle"></i>
+                      <span th:errors="*{fullName}"></span>
+                    </div>
+                  </div>
+
+                  <div class="mb-4">
+                    <label for="phoneNumber" class="form-label fw-semibold">Phone Number</label>
+                    <input type="tel" class="form-control" id="phoneNumber" th:field="*{phoneNumber}" required />
+                    <div class="text-danger" th:if="${#fields.hasErrors('phoneNumber')}">
+                      <i class="bi bi-exclamation-circle"></i>
+                      <span th:errors="*{phoneNumber}"></span>
+                    </div>
+                  </div>
+
+                  <div class="mb-4">
+                    <label for="role" class="form-label fw-semibold">Role</label>
+                    <select class="form-select" id="role" th:field="*{role}" required>
+                      <option value="">Select your role</option>
+                      <option value="BUYER">Buyer</option>
+                      <option value="SELLER">Seller</option>
+                    </select>
+                    <div class="text-danger" th:if="${#fields.hasErrors('role')}">
+                      <i class="bi bi-exclamation-circle"></i>
+                      <span th:errors="*{role}"></span>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn btn-auth btn-primary w-100">
+                    <i class="bi bi-check-circle me-2"></i>Finish Sign-In
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+
+</html>
