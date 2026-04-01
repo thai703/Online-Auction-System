@@ -5,6 +5,7 @@ services:
       - "${APP_PORT:-8123}:8123"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=${JPA_DDL_AUTO:-update}
       - DB_URL=jdbc:mysql://db:3306/auctions?useSSL=false&allowPublicKeyRetrieval=true
       - DB_USERNAME=${DB_USERNAME:-auction_app}
       - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
@@ -37,6 +38,8 @@ services:
 
   db:
     image: mysql:8.0
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_DATABASE: auctions
       MYSQL_USER: ${DB_USERNAME:-auction_app}
@@ -50,6 +53,17 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    ports:
+      - "8088:80"
+    environment:
+      PMA_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
