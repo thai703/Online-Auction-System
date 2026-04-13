@@ -69,7 +69,7 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/register", "/register/verify", "/register/resend", "/login", "/forgot-password", "/reset-password", "/error", "/oauth2/onboarding/**", "/oauth2/authorization/**", "/login/oauth2/**", "/css/**", "/js/**", "/images/**", "/webjars/**", "/ws/**", "/ws/raw/**").permitAll()
+                .requestMatchers("/", "/register", "/register/verify", "/register/resend", "/login", "/forgot-password", "/reset-password", "/error", "/oauth2/onboarding/**", "/oauth2/authorization/**", "/login/oauth2/**", "/css/**", "/js/**", "/images/**", "/webjars/**", "/ws/**", "/ws/raw/**", "/downloads/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auctions", "/api/auctions/*").permitAll()
                 .requestMatchers("/api/seller/**").hasRole("SELLER")

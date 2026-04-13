@@ -224,12 +224,16 @@
       }
 
       .btn-hero {
-        padding: 1rem 2.5rem;
+        padding: 0.8rem 1.5rem;
         font-weight: 600;
-        border-radius: 15px;
+        border-radius: 12px;
         transition: all 0.3s ease;
         text-transform: uppercase;
         letter-spacing: 1px;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .btn-hero.btn-primary {
@@ -335,7 +339,7 @@
             <h1 class="hero-title">Discover Amazing Auctions</h1>
             <p class="hero-subtitle">Join our thriving marketplace where unique items find their perfect match.
               Experience the thrill of bidding and selling in a secure, modern platform.</p>
-            <div class="d-grid gap-3 d-md-flex justify-content-center justify-content-lg-start">
+            <div class="d-grid gap-3 d-md-flex justify-content-center justify-content-lg-start flex-wrap mt-3">
               <a sec:authorize="!isAuthenticated()" href="/register" class="btn btn-hero btn-primary w-100 w-md-auto">
                 <i class="bi bi-person-plus me-2"></i>Get Started
               </a>
