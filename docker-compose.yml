@@ -6,7 +6,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_JPA_HIBERNATE_DDL_AUTO=${JPA_DDL_AUTO:-update}
-      - DB_URL=jdbc:mysql://db:3306/${DB_NAME:-auction_db}?useSSL=false&allowPublicKeyRetrieval=tr>
+      - DB_URL=jdbc:mysql://db:3306/${DB_NAME:-auction_db}?useSSL=false&allowPublicKeyRetrieval=true
       - DB_USERNAME=${DB_USERNAME:-auction_app}
       - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
       - TZ=Asia/Ho_Chi_Minh
@@ -17,7 +17,7 @@ services:
       - MAIL_PASSWORD=${MAIL_PASSWORD:-}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
-      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECTURI=https://myauction.fun/login/>
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECTURI=https://myauction.fun/login/oauth2/code/google
       - SERVER_FORWARD_HEADERS_STRATEGY=framework
 
       - SERVER_URL=${SERVER_URL:-http://localhost:8123}
