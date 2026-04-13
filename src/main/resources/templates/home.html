@@ -339,11 +339,16 @@
               <a sec:authorize="!isAuthenticated()" href="/register" class="btn btn-hero btn-primary w-100 w-md-auto">
                 <i class="bi bi-person-plus me-2"></i>Get Started
               </a>
-              <a sec:authorize="!isAuthenticated()" href="/login" class="btn btn-hero btn-outline-primary w-100 w-md-auto">
+              <a sec:authorize="!isAuthenticated()" href="/login"
+                class="btn btn-hero btn-outline-primary w-100 w-md-auto">
                 <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
               </a>
               <a sec:authorize="isAuthenticated()" href="/dashboard" class="btn btn-hero btn-primary w-100 w-md-auto">
                 <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+              </a>
+              <a href="/downloads/auction-app.apk" download="Auction-App.apk"
+                class="btn btn-hero btn-outline-success w-100 w-md-auto">
+                <i class="bi bi-android2 me-2"></i>Download APK
               </a>
             </div>
           </div>
