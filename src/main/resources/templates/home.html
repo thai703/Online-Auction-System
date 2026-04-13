@@ -224,16 +224,12 @@
       }
 
       .btn-hero {
-        padding: 0.8rem 1.5rem;
+        padding: 1rem 2.5rem;
         font-weight: 600;
-        border-radius: 12px;
+        border-radius: 15px;
         transition: all 0.3s ease;
         text-transform: uppercase;
         letter-spacing: 1px;
-        white-space: nowrap;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
       }
 
       .btn-hero.btn-primary {
@@ -339,20 +335,23 @@
             <h1 class="hero-title">Discover Amazing Auctions</h1>
             <p class="hero-subtitle">Join our thriving marketplace where unique items find their perfect match.
               Experience the thrill of bidding and selling in a secure, modern platform.</p>
-            <div class="d-grid gap-3 d-md-flex justify-content-center justify-content-lg-start flex-wrap mt-3">
+            <div class="d-grid gap-3 d-md-flex justify-content-center justify-content-lg-start">
               <a sec:authorize="!isAuthenticated()" href="/register" class="btn btn-hero btn-primary w-100 w-md-auto">
                 <i class="bi bi-person-plus me-2"></i>Get Started
               </a>
-              <a sec:authorize="!isAuthenticated()" href="/login"
-                class="btn btn-hero btn-outline-primary w-100 w-md-auto">
+              <a sec:authorize="!isAuthenticated()" href="/login" class="btn btn-hero btn-outline-primary w-100 w-md-auto">
                 <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
               </a>
               <a sec:authorize="isAuthenticated()" href="/dashboard" class="btn btn-hero btn-primary w-100 w-md-auto">
                 <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
               </a>
-              <a href="/downloads/auction-app.apk" download="Auction-App.apk"
-                class="btn btn-hero btn-outline-success w-100 w-md-auto">
-                <i class="bi bi-android2 me-2"></i>Download APK
+            </div>
+            
+            <!-- Mobile App Section -->
+            <div class="mt-4 pt-4 border-top text-center text-lg-start" style="border-color: rgba(0,0,0,0.05) !important;">
+              <p class="text-muted mb-3 fw-bold" style="font-size: 0.95rem;"><i class="bi bi-phone me-1"></i> ALSO AVAILABLE ON MOBILE</p>
+              <a href="/downloads/auction-app.apk" download="Auction-App.apk" class="btn btn-hero btn-outline-success w-100 w-md-auto" style="border-width: 2px;">
+                <i class="bi bi-android2 me-2 fs-5"></i>Download Android App
               </a>
             </div>
           </div>
