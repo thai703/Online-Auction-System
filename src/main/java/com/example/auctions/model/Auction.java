@@ -130,13 +130,13 @@ public class Auction {
         updatedAt = LocalDateTime.now();
     }
 
-    // Custom validation for end time
+    // Custom validation for end time - only enforce future date when publishing (ACTIVE)
     @AssertTrue(message = "End time must be in the future for active auctions")
     private boolean isEndTimeValid() {
-        // Only validate future date for DRAFT auctions or when activating an auction
-        if (status == AuctionStatus.DRAFT || (status == AuctionStatus.ACTIVE && id == null)) {
+        if (status == AuctionStatus.ACTIVE) {
             return endTime != null && endTime.isAfter(LocalDateTime.now());
         }
+        // DRAFT auctions: only require endTime is not null (already handled by @NotNull)
         return true;
     }
 

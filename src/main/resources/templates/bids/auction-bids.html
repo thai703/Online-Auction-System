@@ -28,6 +28,51 @@
                 border-radius: 15px;
                 padding: 2rem;
                 box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+                display: flex;
+                flex-direction: column;
+            }
+
+            .bid-list-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .bid-history-hint {
+                color: #64748b;
+                font-size: 0.9rem;
+                margin: 0;
+            }
+
+            .bid-history-frame {
+                max-height: min(68vh, 720px);
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                padding-right: 0.35rem;
+                scrollbar-gutter: stable;
+            }
+
+            .bid-history-frame::-webkit-scrollbar {
+                width: 10px;
+            }
+
+            .bid-history-frame::-webkit-scrollbar-thumb {
+                background: rgba(13, 110, 253, 0.28);
+                border-radius: 999px;
+                border: 2px solid transparent;
+                background-clip: padding-box;
+            }
+
+            .bid-history-frame::-webkit-scrollbar-track {
+                background: #f8fafc;
+                border-radius: 999px;
+            }
+
+            .bid-items {
+                display: flex;
+                flex-direction: column;
             }
 
             .bid-item {
@@ -56,6 +101,11 @@
             .highest-bid {
                 background: #d1e7dd;
                 border-radius: 10px;
+                position: sticky;
+                top: 0;
+                z-index: 2;
+                border: 1px solid rgba(15, 81, 50, 0.12);
+                box-shadow: 0 10px 20px rgba(15, 81, 50, 0.08);
             }
 
             .bid-input {
@@ -131,6 +181,143 @@
                     opacity: 0;
                 }
             }
+
+            .countdown {
+                background: linear-gradient(135deg, #0d6efd08 0%, #ffffff 100%);
+                border-radius: 15px;
+                padding: 1.5rem;
+                text-align: center;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                border: 1px solid rgba(13, 110, 253, 0.1);
+                animation: fadeIn 0.5s ease-out;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .countdown-title {
+                font-size: 1rem;
+                color: #0d6efd;
+                margin-bottom: 1rem;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+
+            .countdown-time {
+                display: flex;
+                justify-content: center;
+                gap: 0.5rem;
+                margin: 0.75rem 0;
+                flex-wrap: wrap;
+            }
+
+            .countdown-item {
+                text-align: center;
+                min-width: 60px;
+                background: white;
+                padding: 0.6rem;
+                border-radius: 10px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+
+            .countdown-number {
+                font-size: 1.6rem;
+                font-weight: 700;
+                color: #0d6efd;
+                margin-bottom: 0.25rem;
+            }
+
+            .countdown-label {
+                font-size: 0.75rem;
+                color: #6c757d;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .end-time {
+                margin-top: 0.75rem;
+                font-size: 0.8rem;
+                color: #6c757d;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.4rem;
+            }
+
+            .countdown.warning .countdown-number {
+                color: #fd7e14;
+            }
+
+            .countdown.danger .countdown-number {
+                color: #dc3545;
+                animation: pulse 1s infinite;
+            }
+
+            @keyframes pulse {
+
+                0%,
+                100% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.05);
+                }
+            }
+
+            @media (max-width: 767.98px) {
+                .bid-section {
+                    padding: 1rem;
+                    border-radius: 16px;
+                }
+
+                .bid-list,
+                .bid-form {
+                    padding: 1.25rem;
+                }
+
+                .bid-list-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    margin-bottom: 0.75rem;
+                }
+
+                .bid-history-frame {
+                    max-height: min(44vh, 360px);
+                    padding-right: 0.2rem;
+                }
+
+                .bid-item {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 0.75rem;
+                }
+
+                .bid-amount {
+                    font-size: 1.1rem;
+                }
+
+                .bid-input {
+                    font-size: 1.2rem;
+                }
+
+                .bid-button {
+                    font-size: 1.05rem;
+                }
+            }
         </style>
 
         <div class="bid-section">
@@ -144,30 +331,80 @@
                     <div class="col-md-8">
                         <!-- Bid List -->
                         <div class="bid-list">
-                            <h3 class="mb-4">Bid History</h3>
-                            <div class="bid-items">
-                                <div th:if="${#lists.isEmpty(bids)}" class="text-center text-muted py-4">
-                                    No bids yet. Be the first to bid!
+                            <div class="bid-list-header">
+                                <div>
+                                    <h3 class="mb-1">Bid History</h3>
+
                                 </div>
-                                <div th:each="bid, iterStat : ${bids}"
-                                    th:class="${iterStat.first ? 'bid-item highest-bid' : 'bid-item'}">
-                                    <div>
-                                        <div class="bid-amount"
-                                            th:text="${#numbers.formatInteger(bid.amount, 0, 'POINT') + ' VNĐ'}">10000
-                                            VNĐ</div>
-                                        <div class="bid-info">
-                                            <span th:text="${bid.bidder.fullName}">Bidder Name</span> •
-                                            <span th:text="${#temporals.format(bid.bidTime, 'dd MMM yyyy HH:mm')}">Bid
-                                                Time</span>
-                                        </div>
+                            </div>
+                            <div class="bid-history-frame">
+                                <div class="bid-items">
+                                    <div th:if="${#lists.isEmpty(bids)}" class="text-center text-muted py-4">
+                                        No bids yet. Be the first to bid!
                                     </div>
-                                    <div th:if="${iterStat.first}" class="badge bg-success">Highest Bid</div>
+                                    <div th:each="bid, iterStat : ${bids}"
+                                        th:class="${iterStat.first ? 'bid-item highest-bid' : 'bid-item'}">
+                                        <div>
+                                            <div class="bid-amount"
+                                                th:text="${#numbers.formatInteger(bid.amount, 0, 'POINT') + ' VNĐ'}">
+                                                10000
+                                                VNĐ</div>
+                                            <div class="bid-info">
+                                                <span
+                                                    th:text="${#authentication.principal.id == bid.bidder.id ? 'You' :
+                                                                 (auction.visibility.name() == 'PUBLIC' or 
+                                                                  #authentication.principal.role.name() == 'ADMIN' or 
+                                                                  (#authentication.principal.id == auction.seller.id and auction.status.name() == 'ENDED' and auction.winner != null and bid.bidder.id == auction.winner.id) ? 
+                                                                  bid.bidder.fullName : 
+                                                                  (bid.bidder.fullName.substring(0,1) + '***' + bid.bidder.fullName.substring(bid.bidder.fullName.length()-1)))}">
+                                                    Bidder Name
+                                                </span> •
+                                                <span
+                                                    th:text="${#temporals.format(bid.bidTime, 'dd MMM yyyy HH:mm')}">Bid
+                                                    Time</span>
+                                            </div>
+                                        </div>
+                                        <div th:if="${iterStat.first}" class="badge bg-success">Highest Bid</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="col-md-4">
+                        <!-- Countdown Timer -->
+                        <div th:if="${auction.status.name() == 'ACTIVE'}" class="countdown mb-3"
+                            th:data-end-time="${#temporals.format(auction.endTime, 'yyyy-MM-dd HH:mm:ss')}">
+                            <div class="countdown-title">
+                                <i class="bi bi-clock"></i>
+                                Time Remaining
+                            </div>
+                            <div class="countdown-time">
+                                <div class="countdown-item">
+                                    <div class="countdown-number" id="bid-days">00</div>
+                                    <div class="countdown-label">Days</div>
+                                </div>
+                                <div class="countdown-item">
+                                    <div class="countdown-number" id="bid-hours">00</div>
+                                    <div class="countdown-label">Hours</div>
+                                </div>
+                                <div class="countdown-item">
+                                    <div class="countdown-number" id="bid-minutes">00</div>
+                                    <div class="countdown-label">Minutes</div>
+                                </div>
+                                <div class="countdown-item">
+                                    <div class="countdown-number" id="bid-seconds">00</div>
+                                    <div class="countdown-label">Seconds</div>
+                                </div>
+                            </div>
+                            <div class="end-time">
+                                <i class="bi bi-calendar-event"></i>
+                                Ends on <span th:text="${#temporals.format(auction.endTime, 'dd MMM yyyy HH:mm')}">End
+                                    Time</span>
+                            </div>
+                        </div>
+                        <!-- Countdown script moved to bottom of page (no th:inline) -->
+
                         <!-- Bid Form -->
                         <div class="bid-form">
                             <h3 class="mb-4">Place Your Bid</h3>
@@ -199,12 +436,15 @@
                     style="border-radius: 20px; overflow: hidden; border: none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
                     <div id="bidModalHeader" class="modal-header border-0 text-center d-block"
                         style="padding: 2.5rem 2rem 1rem; background: #ffffff;">
-                        <h4 class="modal-title" id="bidModalTitle" style="font-weight: 800; color: #0f172a; font-size: 1.75rem; letter-spacing: -0.5px;">Auction Ended</h4>
+                        <h4 class="modal-title" id="bidModalTitle"
+                            style="font-weight: 800; color: #0f172a; font-size: 1.75rem; letter-spacing: -0.5px;">
+                            Auction Ended</h4>
                     </div>
                     <div class="modal-body" style="padding: 0 2rem 1.5rem;">
                         <div id="bidModalMessage"></div>
                     </div>
-                    <div class="modal-footer border-0 justify-content-center" style="padding: 1rem 2rem 2.5rem; background: #ffffff;">
+                    <div class="modal-footer border-0 justify-content-center"
+                        style="padding: 1rem 2rem 2.5rem; background: #ffffff;">
                         <div id="bidModalActions" style="width: 100%;"></div>
                     </div>
                 </div>
@@ -235,12 +475,218 @@
             const currentUserId = /*[[${#authentication.principal.id}]]*/null;
             let stompClient = null;
             let reconnectAttempts = 0;
-            const maxReconnectAttempts = 5;
+            const maxReconnectAttempts = 500; // Effectively infinite for a user session
             let auctionEndRedirectTimer = null;
             let auctionEndHandled = false;
+            let syncAbortController = null;
+            let syncRequestSequence = 0;
+            let syncTimer = null;
+            let syncTimerPendingDelay = Infinity;
+
+            function updateConnectionStatus(status, message) {
+                // Silently handle connection status — no UI alerts
+                return;
+            }
+
+            function getBidTimestampValue(bid) {
+                if (!bid) {
+                    return null;
+                }
+                return bid.bidTime ?? bid.timestamp ?? null;
+            }
+
+            function parseBidTimestamp(bid) {
+                const rawTimestamp = getBidTimestampValue(bid);
+                let bidTimestamp = new Date();
+                if (rawTimestamp) {
+                    if (Array.isArray(rawTimestamp)) {
+                        const [y, m, d, h, min, s] = rawTimestamp;
+                        bidTimestamp = new Date(y, (m || 1) - 1, d || 1, h || 0, min || 0, s || 0);
+                    } else {
+                        const parsedTimestamp = new Date(rawTimestamp);
+                        if (!Number.isNaN(parsedTimestamp.getTime())) {
+                            bidTimestamp = parsedTimestamp;
+                        }
+                    }
+                }
+                return bidTimestamp;
+            }
+
+            function buildEmptyBidHistory() {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'text-center text-muted py-4';
+                emptyMessage.textContent = 'No bids yet. Be the first to bid!';
+                return emptyMessage;
+            }
+
+            function updateBidFormState(currentPrice, startingPrice, bidCount) {
+                const bidInput = document.getElementById('bidAmount');
+                if (!bidInput) {
+                    return;
+                }
+
+                const normalizedStartingPrice = Number(startingPrice);
+                const normalizedCurrentPrice = Number(currentPrice);
+                const hasExistingBids = Number(bidCount) > 0;
+                const nextMinimum = hasExistingBids
+                    ? Math.round(normalizedCurrentPrice + 1000)
+                    : Math.round(normalizedStartingPrice);
+
+                if (!Number.isFinite(nextMinimum)) {
+                    return;
+                }
+
+                bidInput.min = nextMinimum;
+                bidInput.placeholder = 'Min: ' + nextMinimum.toLocaleString('vi-VN') + ' VNĐ';
+            }
+
+            function renderBidItem(bid, isHighest, prepend = false) {
+                const bidItems = document.querySelector('.bid-items');
+                if (!bidItems) {
+                    return;
+                }
+
+                const bidAmount = Number(bid.amount);
+                if (!Number.isFinite(bidAmount)) {
+                    return;
+                }
+
+                const bidTimestamp = parseBidTimestamp(bid);
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'bid-item' + (isHighest ? ' highest-bid' : '');
+
+                const left = document.createElement('div');
+                const amountDiv = document.createElement('div');
+                amountDiv.className = 'bid-amount';
+                amountDiv.textContent = Math.round(bidAmount).toLocaleString('vi-VN') + ' VNĐ';
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'bid-info';
+                const bidderDisplayName = (bid.bidderId === currentUserId) ? 'You' : (bid.bidderName || 'Unknown bidder');
+                infoDiv.textContent = bidderDisplayName + ' • ' + bidTimestamp.toLocaleString('vi-VN');
+
+                left.appendChild(amountDiv);
+                left.appendChild(infoDiv);
+                wrapper.appendChild(left);
+
+                if (isHighest) {
+                    const badge = document.createElement('div');
+                    badge.className = 'badge bg-success';
+                    badge.textContent = 'Highest Bid';
+                    wrapper.appendChild(badge);
+                }
+
+                if (prepend) {
+                    bidItems.prepend(wrapper);
+                    return;
+                }
+
+                bidItems.appendChild(wrapper);
+            }
+
+            function renderBidHistory(bids) {
+                const bidItems = document.querySelector('.bid-items');
+                if (!bidItems) {
+                    return;
+                }
+
+                bidItems.innerHTML = '';
+                if (!Array.isArray(bids) || bids.length === 0) {
+                    bidItems.appendChild(buildEmptyBidHistory());
+                    return;
+                }
+
+                bids.forEach((bid, index) => {
+                    renderBidItem(bid, index === 0);
+                });
+            }
+
+            function scheduleBidSync(delay = 0) {
+                // Don't replace a faster pending sync with a slower one
+                if (syncTimer != null && delay >= syncTimerPendingDelay) {
+                    return;
+                }
+                if (syncTimer != null) {
+                    clearTimeout(syncTimer);
+                }
+                syncTimerPendingDelay = delay;
+                syncTimer = window.setTimeout(function () {
+                    syncTimer = null;
+                    syncTimerPendingDelay = Infinity;
+                    syncBidHistory();
+                }, delay);
+            }
+
+            function syncBidHistory() {
+                if (!auctionId) {
+                    return;
+                }
+
+                if (syncAbortController) {
+                    syncAbortController.abort();
+                }
+
+                const requestSequence = ++syncRequestSequence;
+                syncAbortController = new AbortController();
+
+                fetch('/api/auctions/' + auctionId, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    },
+                    credentials: 'same-origin',
+                    signal: syncAbortController.signal
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Sync request failed with status ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(res => {
+                        if (requestSequence !== syncRequestSequence) {
+                            return;
+                        }
+
+                        if (!res.success || !res.data) {
+                            return;
+                        }
+
+                        // Detect auction end from HTTP sync when WebSocket is down
+                        if (res.data.status === 'ENDED' && !auctionEndHandled) {
+                            auctionEndHandled = true;
+                            handleAuctionEnd({
+                                auctionId: auctionId,
+                                productName: res.data.productName,
+                                finalPrice: res.data.currentPrice,
+                                winnerName: res.data.winnerName,
+                                winnerId: res.data.winnerId,
+                                sellerId: res.data.sellerId
+                            });
+                            return;
+                        }
+
+                        if (res.data.privateAccessRequired) {
+                            console.warn('Bid sync skipped because private access is still required.');
+                            return;
+                        }
+
+                        const bids = Array.isArray(res.data.bids) ? res.data.bids : [];
+                        renderBidHistory(bids);
+                        updateBidFormState(res.data.currentPrice, res.data.startingPrice, bids.length);
+                    })
+                    .catch(err => {
+                        if (err.name === 'AbortError') {
+                            return;
+                        }
+                        console.error('Error syncing bids:', err);
+                    });
+            }
 
             function connectWebSocket() {
-                if (stompClient !== null) {
+                if (stompClient && stompClient.connected) {
                     try {
                         stompClient.disconnect();
                     } catch (e) {
@@ -249,8 +695,15 @@
                 }
 
                 console.log('Attempting to connect to WebSocket...');
-                const socket = new SockJS('/ws');
-                stompClient = Stomp.over(socket);
+                updateConnectionStatus('connecting', 'Connecting to real-time server...');
+
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+                const wsUrl = wsProtocol + window.location.host + '/ws/raw';
+                stompClient = Stomp.client(wsUrl);
+
+                // Enable Heartbeats (10s)
+                stompClient.heartbeat.outgoing = 10000;
+                stompClient.heartbeat.incoming = 10000;
 
                 // Disable debug logging
                 stompClient.debug = null;
@@ -258,16 +711,25 @@
                 stompClient.connect({},
                     function (frame) {
                         console.log('Connected to WebSocket');
-                        reconnectAttempts = 0; // Reset counter on successful connection
+                        updateConnectionStatus('connected');
+                        reconnectAttempts = 0;
+
+                        // Sync state immediately upon connection to recover missed events
+                        scheduleBidSync(0);
 
                         stompClient.subscribe('/topic/auction/' + auctionId, function (message) {
                             try {
                                 const data = JSON.parse(message.body);
+                                // Strict auctionId check to prevent cross-auction data leakage
+                                if (data.auctionId && parseInt(data.auctionId) !== parseInt(auctionId)) {
+                                    return;
+                                }
+
                                 if (data.eventType === 'AUCTION_ENDED' && !auctionEndHandled) {
                                     if (!auctionEndRedirectTimer) {
                                         auctionEndRedirectTimer = window.setTimeout(() => {
                                             window.location.href = '/auctions/' + auctionId;
-                                        }, 300);
+                                        }, 1000); // Slight delay to let private message arrive first
                                     }
                                 } else if (data.eventType === 'NEW_BID') {
                                     updateBidDisplay(data);
@@ -280,7 +742,7 @@
                         stompClient.subscribe('/user/queue/auction-end', function (message) {
                             try {
                                 const data = JSON.parse(message.body);
-                                if (data.auctionId === auctionId && !auctionEndHandled) {
+                                if (data.auctionId && parseInt(data.auctionId) === parseInt(auctionId) && !auctionEndHandled) {
                                     auctionEndHandled = true;
                                     if (auctionEndRedirectTimer) {
                                         clearTimeout(auctionEndRedirectTimer);
@@ -303,72 +765,42 @@
             function handleConnectionError() {
                 if (reconnectAttempts < maxReconnectAttempts) {
                     reconnectAttempts++;
-                    const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
-                    console.log(`Reconnecting in ${delay / 1000} seconds... (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
+                    // Exponential backoff: 1s, 2s, 4s, 8s, up to 15s
+                    const delay = Math.min(1000 * Math.pow(1.5, reconnectAttempts), 15000);
+
+                    updateConnectionStatus('connecting', `Connection lost. Reconnecting in ${Math.round(delay / 1000)}s...`);
+                    console.log(`Reconnecting (Attempt ${reconnectAttempts})...`);
+
                     setTimeout(connectWebSocket, delay);
                 } else {
-                    console.error('Max reconnection attempts reached');
-                    const errorDiv = document.getElementById('bidError');
-                    errorDiv.textContent = 'Connection lost. Please refresh the page to reconnect.';
-                    errorDiv.style.display = 'block';
+                    updateConnectionStatus('error', 'Connection lost. Please refresh the page.');
                 }
             }
 
             function updateBidDisplay(bid) {
+                const bidItems = document.querySelector('.bid-items');
                 const bidAmount = Number(bid.amount);
-                const bidTimestamp = bid.timestamp ? new Date(bid.timestamp) : null;
-                if (!Number.isFinite(bidAmount) || !bid.bidderName || !bidTimestamp || Number.isNaN(bidTimestamp.getTime())) {
-                    console.warn('Skipping malformed bid update payload:', bid);
+                if (!bidItems || !Number.isFinite(bidAmount) || !bid.bidderName) {
+                    scheduleBidSync(0);
                     return;
                 }
 
-                const bidItems = document.querySelector('.bid-items');
                 const emptyMessage = bidItems.querySelector('.text-center.text-muted');
                 if (emptyMessage) {
                     emptyMessage.remove();
                 }
 
-                // Build DOM safely using textContent (prevents XSS)
-                const wrapper = document.createElement('div');
-                wrapper.className = 'bid-item highest-bid';
-
-                const left = document.createElement('div');
-
-                const amountDiv = document.createElement('div');
-                amountDiv.className = 'bid-amount';
-                amountDiv.textContent = Math.round(bidAmount).toLocaleString('vi-VN') + ' VN\u0110';
-
-                const infoDiv = document.createElement('div');
-                infoDiv.className = 'bid-info';
-                infoDiv.textContent = bid.bidderName + ' \u2022 ' + bidTimestamp.toLocaleString('vi-VN');
-
-                left.appendChild(amountDiv);
-                left.appendChild(infoDiv);
-
-                const badge = document.createElement('div');
-                badge.className = 'badge bg-success';
-                badge.textContent = 'Highest Bid';
-
-                wrapper.appendChild(left);
-                wrapper.appendChild(badge);
-
-                // Remove highest-bid class from previous highest bid
                 const previousHighest = bidItems.querySelector('.highest-bid');
                 if (previousHighest) {
                     previousHighest.classList.remove('highest-bid');
                     previousHighest.querySelector('.badge')?.remove();
                 }
 
-                // Add new bid at the top of the bid items
-                bidItems.prepend(wrapper);
+                renderBidItem(bid, true, true);
+                updateBidFormState(bidAmount, bidAmount, 1);
 
-                // Update minimum bid amount in the form
-                const bidInput = document.getElementById('bidAmount');
-                if (bidInput) {
-                    const newMinBid = Math.round(bidAmount + 1000);
-                    bidInput.min = newMinBid;
-                    bidInput.placeholder = 'Min: ' + newMinBid.toLocaleString() + ' VN\u0110';
-                }
+                // Debounced catch-up fetch for any event we may have missed in transit.
+                scheduleBidSync(250);
             }
 
             function handleAuctionEnd(data) {
@@ -409,7 +841,7 @@
                     winnerLabel.textContent = 'Winner';
                     const winnerValue = document.createElement('strong');
                     winnerValue.style.cssText = 'color: #1e293b; font-size: 1.1rem;';
-                    winnerValue.textContent = data.winnerName;
+                    winnerValue.textContent = isWinner ? 'You' : data.winnerName;
                     winnerRow.appendChild(winnerLabel);
                     winnerRow.appendChild(winnerValue);
                     card.appendChild(winnerRow);
@@ -512,6 +944,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': csrfToken
                     },
                     body: `auctionId=${auctionId}&amount=${amount}&_csrf=${csrfToken}`
@@ -523,6 +956,11 @@
                             errorDiv.style.display = 'none';
                             successDiv.textContent = 'Bid placed successfully!';
                             successDiv.style.display = 'block';
+
+                            // Immediately reconcile against server state in case the WebSocket
+                            // event is delayed or temporarily dropped.
+                            scheduleBidSync(0);
+
                             setTimeout(() => {
                                 successDiv.style.display = 'none';
                             }, 3000);
@@ -542,15 +980,118 @@
                     });
             });
 
-            // Connect to WebSocket when page loads
-            window.addEventListener('load', connectWebSocket);
+            // Connect to WebSocket as early as possible
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', connectWebSocket);
+            } else {
+                connectWebSocket();
+            }
 
             // Reconnect when window regains focus
             window.addEventListener('focus', function () {
                 if (!stompClient || !stompClient.connected) {
+                    console.log('Reconnecting WebSocket on focus...');
                     connectWebSocket();
+                } else {
+                    scheduleBidSync(0);
                 }
             });
+
+            // Fallback: periodically sync via HTTP when WebSocket is down
+            // This ensures bid list stays current even if STOMP never connects
+            // (e.g. proxy compression corrupts frames)
+            setInterval(function () {
+                if (document.visibilityState === 'visible' && (!stompClient || !stompClient.connected)) {
+                    scheduleBidSync(0);
+                }
+            }, 5000);
+
+            window.addEventListener('beforeunload', function () {
+                if (syncTimer) {
+                    clearTimeout(syncTimer);
+                }
+                if (syncAbortController) {
+                    syncAbortController.abort();
+                }
+                if (stompClient && stompClient.connected) {
+                    stompClient.disconnect();
+                }
+            });
+        </script>
+
+        <!-- Countdown Timer Script (plain JS - no th:inline to avoid Thymeleaf issues) -->
+        <script th:inline="none">
+            (function () {
+                var countdownEl = document.querySelector('.countdown[data-end-time]');
+                if (!countdownEl) return;
+
+                var endTimeStr = countdownEl.getAttribute('data-end-time');
+                var endTime = new Date(endTimeStr).getTime();
+                var bidCountdownInterval = null;
+
+                function updateBidCountdown() {
+                    var now = new Date().getTime();
+                    var timeLeft = endTime - now;
+
+                    if (timeLeft <= 0) {
+                        clearInterval(bidCountdownInterval);
+                        countdownEl.textContent = '';
+                        var titleEl = document.createElement('div');
+                        titleEl.className = 'countdown-title text-danger';
+                        titleEl.textContent = ' Time is up!';
+                        var icon = document.createElement('i');
+                        icon.className = 'bi bi-alarm';
+                        titleEl.prepend(icon);
+                        var waitEl = document.createElement('div');
+                        waitEl.className = 'text-muted mt-2';
+                        waitEl.textContent = 'Waiting for auction to close...';
+                        countdownEl.appendChild(titleEl);
+                        countdownEl.appendChild(waitEl);
+                        var bidForm = document.getElementById('bidForm');
+                        if (bidForm) {
+                            bidForm.querySelectorAll('input, button').forEach(function (el) { el.disabled = true; });
+                        }
+
+                        // Fail-safe: If no closure message from server after 15s, force reload
+                        window.setTimeout(function () {
+                            if (!auctionEndHandled) {
+                                console.log('Auction end notification delayed. Forcing reload...');
+                                window.location.reload();
+                            }
+                        }, 15000);
+                        return;
+                    }
+
+                    var days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                    var hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    var minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    var seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                    var units = [['bid-days', days], ['bid-hours', hours], ['bid-minutes', minutes], ['bid-seconds', seconds]];
+                    for (var i = 0; i < units.length; i++) {
+                        var el = document.getElementById(units[i][0]);
+                        if (el) {
+                            var newVal = String(units[i][1]).padStart(2, '0');
+                            if (el.textContent !== newVal) {
+                                el.textContent = newVal;
+                            }
+                        }
+                    }
+
+                    if (days === 0) {
+                        if (hours < 1) {
+                            countdownEl.classList.add('danger');
+                            countdownEl.classList.remove('warning');
+                        } else if (hours < 24) {
+                            countdownEl.classList.add('warning');
+                            countdownEl.classList.remove('danger');
+                        }
+                    }
+                }
+
+                updateBidCountdown();
+                bidCountdownInterval = setInterval(updateBidCountdown, 1000);
+            })();
         </script>
     </main>
 </body>

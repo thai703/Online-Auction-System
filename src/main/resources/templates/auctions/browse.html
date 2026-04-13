@@ -168,6 +168,37 @@
                 margin-top: 2rem;
                 justify-content: center;
             }
+
+            @media (max-width: 768px) {
+                .browse-header {
+                    padding: 1.5rem 1rem;
+                    border-radius: 15px;
+                }
+                .browse-toolbar {
+                    padding: 1rem;
+                }
+                .auction-grid {
+                    grid-template-columns: 1fr;
+                    gap: 1.5rem;
+                    padding: 0;
+                }
+                .results-meta {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 0.5rem;
+                }
+                .auction-image {
+                    height: 180px;
+                }
+                .auction-price {
+                    font-size: 1.25rem;
+                }
+                .auction-meta {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 0.5rem;
+                }
+            }
         </style>
 
         <div class="browse-header">
@@ -181,32 +212,31 @@
                 </div>
 
                 <form class="browse-toolbar" method="get" th:action="@{/auctions/browse}">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-lg-6">
+                    <div class="row g-3">
+                        <div class="col-12 col-lg-6">
                             <label for="keyword" class="form-label fw-semibold">Search</label>
                             <input type="text" id="keyword" name="keyword" class="form-control" th:value="${keyword}"
                                 placeholder="Product name or description" />
                         </div>
-                        <div class="col-md-4 col-lg-2">
+                        <div class="col-6 col-md-4 col-lg-2">
                             <label for="visibility" class="form-label fw-semibold">Access</label>
                             <select id="visibility" name="visibility" class="form-select">
-                                <option value="all" th:selected="${visibility == 'all'}">All auctions</option>
+                                <option value="all" th:selected="${visibility == 'all'}">All</option>
                                 <option value="public" th:selected="${visibility == 'public'}">Public</option>
                                 <option value="private" th:selected="${visibility == 'private'}">Private</option>
                             </select>
                         </div>
-                        <div class="col-md-4 col-lg-2">
+                        <div class="col-6 col-md-4 col-lg-2">
                             <label for="sort" class="form-label fw-semibold">Sort By</label>
                             <select id="sort" name="sort" class="form-select">
-                                <option value="endingSoon" th:selected="${sort == 'endingSoon'}">Ending soon</option>
+                                <option value="endingSoon" th:selected="${sort == 'endingSoon'}">Ending</option>
                                 <option value="newest" th:selected="${sort == 'newest'}">Newest</option>
-                                <option value="priceLow" th:selected="${sort == 'priceLow'}">Price: low to high</option>
-                                <option value="priceHigh" th:selected="${sort == 'priceHigh'}">Price: high to low
-                                </option>
-                                <option value="nameAsc" th:selected="${sort == 'nameAsc'}">Name A-Z</option>
+                                <option value="priceLow" th:selected="${sort == 'priceLow'}">Price: Low</option>
+                                <option value="priceHigh" th:selected="${sort == 'priceHigh'}">Price: High</option>
+                                <option value="nameAsc" th:selected="${sort == 'nameAsc'}">A-Z</option>
                             </select>
                         </div>
-                        <div class="col-md-4 col-lg-2 d-flex gap-2">
+                        <div class="col-12 col-md-4 col-lg-2 d-flex gap-2 align-items-end">
                             <button type="submit" class="btn btn-primary flex-grow-1">
                                 Apply
                             </button>
@@ -275,7 +305,7 @@
 
                 <!-- Pagination -->
                 <nav th:if="${totalPages > 1}" class="custom-pagination mt-3" aria-label="Auction navigation">
-                    <ul class="pagination justify-content-center" style="gap:0.5rem;">
+                    <ul class="pagination justify-content-center d-none d-md-flex" style="gap:0.5rem;">
                         <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
                             <a class="page-link"
                                 th:href="@{/auctions/browse(page=${currentPage - 1}, keyword=${keyword}, visibility=${visibility}, sort=${sort})}"
@@ -293,6 +323,26 @@
                             <a class="page-link"
                                 th:href="@{/auctions/browse(page=${currentPage + 1}, keyword=${keyword}, visibility=${visibility}, sort=${sort})}"
                                 aria-label="Next" style="border-radius:10px;">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="pagination justify-content-center align-items-stretch d-flex d-md-none" style="gap:0.5rem;">
+                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                            <a class="page-link"
+                                th:href="@{/auctions/browse(page=${currentPage - 1}, keyword=${keyword}, visibility=${visibility}, sort=${sort})}"
+                                aria-label="Previous page">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item disabled flex-grow-1">
+                            <span class="page-link h-100 d-flex align-items-center justify-content-center"
+                                th:text="${'Page ' + currentPage + ' / ' + totalPages}">Page 1 / 1</span>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                            <a class="page-link"
+                                th:href="@{/auctions/browse(page=${currentPage + 1}, keyword=${keyword}, visibility=${visibility}, sort=${sort})}"
+                                aria-label="Next page">
                                 <i class="bi bi-chevron-right"></i>
                             </a>
                         </li>

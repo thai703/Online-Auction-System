@@ -1,14 +1,15 @@
 services:
   app:
-    build: .
+    image: thai703/online-auction:latest
     ports:
       - "${APP_PORT:-8123}:8123"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_JPA_HIBERNATE_DDL_AUTO=${JPA_DDL_AUTO:-update}
-      - DB_URL=jdbc:mysql://db:3306/auctions?useSSL=false&allowPublicKeyRetrieval=true
+      - DB_URL=jdbc:mysql://db:3306/${DB_NAME:-auction_db}?useSSL=false&allowPublicKeyRetrieval=tr>
       - DB_USERNAME=${DB_USERNAME:-auction_app}
       - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+      - TZ=Asia/Ho_Chi_Minh
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
       - MAIL_HOST=${MAIL_HOST:-smtp.gmail.com}
       - MAIL_PORT=${MAIL_PORT:-587}
@@ -16,6 +17,9 @@ services:
       - MAIL_PASSWORD=${MAIL_PASSWORD:-}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECTURI=https://myauction.fun/login/>
+      - SERVER_FORWARD_HEADERS_STRATEGY=framework
+
       - SERVER_URL=${SERVER_URL:-http://localhost:8123}
       - UPLOAD_PATH=/data/auction-images
       - WEBSOCKET_ALLOWED_ORIGINS=${WEBSOCKET_ALLOWED_ORIGINS:-*}
@@ -30,7 +34,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8123/login"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8123/login" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -41,14 +45,15 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: auctions
+      MYSQL_DATABASE: ${DB_NAME:-auction_db}
       MYSQL_USER: ${DB_USERNAME:-auction_app}
       MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD is required}
+      TZ: Asia/Ho_Chi_Minh
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 10s
       timeout: 5s
       retries: 10

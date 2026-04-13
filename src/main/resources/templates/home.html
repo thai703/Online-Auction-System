@@ -73,6 +73,7 @@
         font-weight: 800;
         background: linear-gradient(45deg, #0d6efd, #00c6ff);
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 1.5rem;
         animation: fadeInUp 1s ease;
@@ -196,6 +197,7 @@
         font-weight: 800;
         background: linear-gradient(45deg, #0d6efd, #00c6ff);
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 0.5rem;
       }
@@ -289,17 +291,25 @@
         margin-bottom: 3rem;
         background: linear-gradient(45deg, #0d6efd, #00c6ff);
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
       }
 
       @media (max-width: 768px) {
         .hero-section {
-          padding: 4rem 0;
+          padding: 3rem 0;
           text-align: center;
+          border-radius: 0 0 40px 40px;
         }
 
         .hero-title {
-          font-size: 2.5rem;
+          font-size: 2.25rem;
+          margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+          font-size: 1.1rem;
+          margin-bottom: 1.5rem;
         }
 
         .stat-number {
@@ -307,7 +317,12 @@
         }
 
         .section-title {
-          font-size: 2rem;
+          font-size: 1.8rem;
+        }
+
+        .hero-image-container {
+          margin-top: 2rem;
+          padding: 1rem;
         }
       }
     </style>
@@ -320,14 +335,14 @@
             <h1 class="hero-title">Discover Amazing Auctions</h1>
             <p class="hero-subtitle">Join our thriving marketplace where unique items find their perfect match.
               Experience the thrill of bidding and selling in a secure, modern platform.</p>
-            <div class="d-grid gap-3 d-sm-flex">
-              <a sec:authorize="!isAuthenticated()" href="/register" class="btn btn-hero btn-primary">
+            <div class="d-grid gap-3 d-md-flex justify-content-center justify-content-lg-start">
+              <a sec:authorize="!isAuthenticated()" href="/register" class="btn btn-hero btn-primary w-100 w-md-auto">
                 <i class="bi bi-person-plus me-2"></i>Get Started
               </a>
-              <a sec:authorize="!isAuthenticated()" href="/login" class="btn btn-hero btn-outline-primary">
+              <a sec:authorize="!isAuthenticated()" href="/login" class="btn btn-hero btn-outline-primary w-100 w-md-auto">
                 <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
               </a>
-              <a sec:authorize="isAuthenticated()" href="/dashboard" class="btn btn-hero btn-primary">
+              <a sec:authorize="isAuthenticated()" href="/dashboard" class="btn btn-hero btn-primary w-100 w-md-auto">
                 <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
               </a>
             </div>

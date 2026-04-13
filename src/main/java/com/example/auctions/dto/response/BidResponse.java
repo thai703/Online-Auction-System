@@ -16,13 +16,17 @@ public record BidResponse(
         String auctionStatus
 ) {
     public static BidResponse from(Bid bid) {
+        return from(bid, bid.getBidderNameSnapshot() != null ? bid.getBidderNameSnapshot()
+                : (bid.getBidder() != null ? bid.getBidder().getFullName() : null));
+    }
+
+    public static BidResponse from(Bid bid, String bidderName) {
         return new BidResponse(
                 bid.getId(),
                 bid.getAmount(),
                 bid.getBidTime(),
                 bid.getBidder() != null ? bid.getBidder().getId() : null,
-                bid.getBidderNameSnapshot() != null ? bid.getBidderNameSnapshot()
-                        : (bid.getBidder() != null ? bid.getBidder().getFullName() : null),
+                bidderName,
                 bid.getAuction() != null ? bid.getAuction().getId() : null,
                 bid.getProductNameSnapshot() != null ? bid.getProductNameSnapshot()
                         : (bid.getAuction() != null ? bid.getAuction().getProductName() : null),

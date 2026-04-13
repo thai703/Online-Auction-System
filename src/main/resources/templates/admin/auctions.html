@@ -242,19 +242,51 @@
       }
 
       @media (max-width: 768px) {
-        .page-header,
-        .filter-card,
-        .table-header,
+        .admin-page {
+           padding: 0 0.5rem 2.5rem;
+        }
+        .page-header {
+           padding: 1.5rem 1rem;
+           text-align: center;
+        }
+        .page-header h1 {
+           font-size: 1.75rem;
+        }
+        .filter-card {
+           padding: 1rem;
+        }
+        .table-header {
+           padding: 1rem;
+           flex-direction: column;
+           align-items: center !important;
+           text-align: center;
+        }
         .pagination-wrap {
-          padding: 1rem;
+           padding: 1rem;
         }
-
         .filter-actions {
-          justify-content: stretch;
+           flex-direction: column;
+           gap: 0.5rem;
         }
-
-        .filter-actions .btn-admin {
-          flex: 1 1 auto;
+        .btn-admin {
+           width: 100%;
+        }
+        .money-cell {
+           text-align: left;
+        }
+        .table thead th {
+           font-size: 0.7rem;
+           padding: 0.75rem 0.5rem;
+        }
+        .table tbody td {
+           padding: 0.75rem 0.5rem;
+        }
+        .action-group {
+           justify-content: flex-start;
+           width: 100%;
+        }
+        .action-group .btn {
+           flex: 1;
         }
       }
     </style>
@@ -301,7 +333,7 @@
         </div>
 
         <div class="table-responsive">
-          <table class="table table-hover align-middle">
+          <table class="table table-hover align-middle table-mobile-cards">
             <thead>
               <tr>
                 <th>ID</th>
@@ -316,12 +348,12 @@
             </thead>
             <tbody>
               <tr th:each="auction : ${auctions}">
-                <td class="cell-primary numeric-cell" th:text="${auction.id}">1</td>
-                <td>
+                <td data-label="ID" class="cell-primary numeric-cell" th:text="${auction.id}">1</td>
+                <td data-label="Listing">
                   <div class="cell-primary" th:text="${auction.productName}">Auction Name</div>
                   <div class="cell-secondary" th:text="${#strings.abbreviate(auction.description, 78)}">Description</div>
                 </td>
-                <td>
+                <td data-label="Seller">
                   <div class="cell-primary"
                     th:text="${auction.seller != null ? auction.seller.fullName : 'Unknown seller'}">Seller</div>
                   <div class="cell-secondary"
@@ -329,25 +361,25 @@
                     seller@example.com
                   </div>
                 </td>
-                <td>
+                <td data-label="Access">
                   <span th:class="${'badge-soft badge-visibility-' + #strings.toLowerCase(auction.visibility.name())}">
                     <i th:class="${auction.visibility.name() == 'PRIVATE'} ? 'bi bi-lock-fill me-1' : 'bi bi-globe2 me-1'"></i>
                     <span th:text="${auction.visibility}">PUBLIC</span>
                   </span>
                 </td>
-                <td class="money-cell"
+                <td data-label="Price" class="money-cell"
                   th:text="${#numbers.formatInteger(auction.currentPrice != null ? auction.currentPrice : auction.startingPrice, 0, 'POINT') + ' VNĐ'}">
                   0 VNĐ
                 </td>
-                <td class="numeric-cell"
+                <td data-label="Ends" class="numeric-cell"
                   th:text="${auction.endTime != null ? #temporals.format(auction.endTime, 'dd/MM/yyyy HH:mm') : 'N/A'}">
                   N/A
                 </td>
-                <td>
+                <td data-label="Status">
                   <span th:class="${'badge-soft badge-status-' + #strings.toLowerCase(auction.status.name())}"
                     th:text="${auction.status}">ACTIVE</span>
                 </td>
-                <td class="text-end">
+                <td data-label="Moderation" class="text-end">
                   <div class="action-group">
                     <a th:href="@{/admin/auctions/{id}(id=${auction.id}, page=${currentPage}, keyword=${currentKeyword}, status=${currentStatus})}"
                       class="btn btn-outline-primary btn-sm btn-admin">Details</a>
@@ -370,7 +402,7 @@
 
         <div class="pagination-wrap" th:if="${totalPages > 1}">
           <nav aria-label="Auctions pagination">
-            <ul class="pagination justify-content-center mb-0" style="gap:0.5rem;">
+            <ul class="pagination justify-content-center mb-0 d-none d-md-flex" style="gap:0.5rem;">
               <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
                 <a class="page-link" th:href="@{/admin/auctions(page=${currentPage - 1}, keyword=${currentKeyword}, status=${currentStatus})}">
                   <i class="bi bi-chevron-left"></i>
@@ -384,6 +416,22 @@
               </li>
               <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
                 <a class="page-link" th:href="@{/admin/auctions(page=${currentPage + 1}, keyword=${currentKeyword}, status=${currentStatus})}">
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </li>
+            </ul>
+            <ul class="pagination justify-content-center align-items-stretch mb-0 d-flex d-md-none" style="gap:0.5rem;">
+              <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/admin/auctions(page=${currentPage - 1}, keyword=${currentKeyword}, status=${currentStatus})}" aria-label="Previous page">
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+              </li>
+              <li class="page-item disabled flex-grow-1">
+                <span class="page-link h-100 d-flex align-items-center justify-content-center"
+                  th:text="${'Page ' + currentPage + ' / ' + totalPages}">Page 1 / 1</span>
+              </li>
+              <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/admin/auctions(page=${currentPage + 1}, keyword=${currentKeyword}, status=${currentStatus})}" aria-label="Next page">
                   <i class="bi bi-chevron-right"></i>
                 </a>
               </li>

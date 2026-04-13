@@ -151,6 +151,78 @@
             .pagination-wrap {
                 margin-top: 2rem;
             }
+
+            .status-filter-strip {
+                display: flex;
+                gap: 0.75rem;
+                flex-wrap: wrap;
+                margin-bottom: 1.5rem;
+            }
+
+            .status-filter-strip .btn {
+                border-radius: 999px;
+                min-height: 44px;
+                padding: 0.6rem 1.1rem;
+            }
+
+            @media (max-width: 768px) {
+                .management-header {
+                    padding: 1.5rem 0.5rem;
+                }
+                .management-header .d-flex {
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 1rem;
+                    text-align: center;
+                }
+                .auction-header {
+                    padding: 1rem;
+                    flex-direction: column;
+                    align-items: flex-start !important;
+                    gap: 1rem;
+                }
+                .auction-stats {
+                    flex-direction: column;
+                    gap: 0;
+                    padding: 0.5rem;
+                }
+                .stat-item {
+                    border-bottom: 1px solid #f1f5f9;
+                    padding: 0.75rem;
+                }
+                .stat-item:last-child {
+                    border-bottom: none;
+                }
+                .stat-value {
+                    font-size: 1.25rem;
+                }
+                .status-filter-strip {
+                    flex-wrap: nowrap;
+                    overflow-x: auto;
+                    padding-bottom: 0.25rem;
+                }
+                .status-filter-strip .btn {
+                    flex: 0 0 auto;
+                    white-space: nowrap;
+                    font-size: 0.9rem;
+                }
+                .bid-item {
+                    padding: 1rem;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 0.5rem;
+                }
+                .bid-amount {
+                    font-size: 1.1rem;
+                }
+                .badge {
+                    margin-top: 0.25rem;
+                }
+                .winner-info {
+                    font-size: 0.85rem;
+                    padding: 0.5rem 0.75rem;
+                }
+            }
         </style>
 
         <div class="management-header">
@@ -163,7 +235,7 @@
                 </div>
 
                 <!-- Filter Tabs -->
-                <div class="btn-group mb-4">
+                <div class="status-filter-strip" role="tablist" aria-label="Auction bid management filters">
                     <a th:href="@{/auctions/management/bids(status=all)}" class="btn"
                         th:classappend="${currentStatus == 'all'} ? 'btn-primary' : 'btn-outline-primary'">All</a>
                     <a th:href="@{/auctions/management/bids(status=active)}" class="btn"
@@ -244,7 +316,10 @@
                                         th:text="${#numbers.formatInteger(bid.amount, 0, 'POINT') + ' VNĐ'}">100 VNĐ
                                     </div>
                                     <div class="bid-info">
-                                        <span th:text="${bid.bidderNameSnapshot ?: bid.bidder.fullName}">Bidder
+                                        <span th:with="bidderName=${bid.bidderNameSnapshot ?: bid.bidder.fullName}"
+                                              th:text="${auction.visibility.name() != 'PRIVATE' ? bidderName :
+                                                        ((auction.status.name() == 'ENDED' and auction.winner != null and bid.bidder.id == auction.winner.id) ? bidderName :
+                                                        (bidderName.substring(0,1) + '***' + bidderName.substring(bidderName.length()-1)))}">Bidder
                                             Name</span> •
                                         <span th:text="${#temporals.format(bid.bidTime, 'dd MMM yyyy HH:mm')}">Bid
                                             Time</span>
@@ -261,7 +336,7 @@
 
                     <div class="pagination-wrap" th:if="${totalPages > 1}">
                         <nav aria-label="Auction bids management pagination">
-                            <ul class="pagination justify-content-center mb-0" style="gap:0.5rem;">
+                            <ul class="pagination justify-content-center mb-0 d-none d-md-flex" style="gap:0.5rem;">
                                 <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
                                     <a class="page-link"
                                         th:href="@{/auctions/management/bids(page=${currentPage - 1}, status=${currentStatus})}">
@@ -277,6 +352,26 @@
                                 <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
                                     <a class="page-link"
                                         th:href="@{/auctions/management/bids(page=${currentPage + 1}, status=${currentStatus})}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                            <ul class="pagination justify-content-center align-items-stretch mb-0 d-flex d-md-none" style="gap:0.5rem;">
+                                <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+                                    <a class="page-link"
+                                        th:href="@{/auctions/management/bids(page=${currentPage - 1}, status=${currentStatus})}"
+                                        aria-label="Previous page">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item disabled flex-grow-1">
+                                    <span class="page-link h-100 d-flex align-items-center justify-content-center"
+                                        th:text="${'Page ' + currentPage + ' / ' + totalPages}">Page 1 / 1</span>
+                                </li>
+                                <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+                                    <a class="page-link"
+                                        th:href="@{/auctions/management/bids(page=${currentPage + 1}, status=${currentStatus})}"
+                                        aria-label="Next page">
                                         <i class="bi bi-chevron-right"></i>
                                     </a>
                                 </li>

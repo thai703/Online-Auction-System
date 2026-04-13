@@ -241,10 +241,40 @@
       }
 
       @media (max-width: 768px) {
-        .page-header,
+        .admin-page {
+           padding: 0 0.5rem 2.5rem;
+        }
+        .page-header {
+           padding: 1.5rem 1rem;
+           text-align: center;
+        }
+        .page-header h1 {
+           font-size: 1.75rem;
+        }
         .section-header,
         .card-body-pad {
           padding: 1rem;
+        }
+        .metric-card {
+           padding: 1rem;
+        }
+        .metric-value {
+           font-size: 1.25rem;
+        }
+        .meta-grid {
+           grid-template-columns: 1fr;
+        }
+        .btn-admin {
+           width: 100%;
+        }
+        .flex-lg-row {
+           flex-direction: column !important;
+        }
+        .align-items-lg-end {
+           align-items: center !important;
+        }
+        .justify-content-lg-end {
+           justify-content: center !important;
         }
       }
     </style>

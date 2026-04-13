@@ -208,6 +208,10 @@ public class AuctionService {
         existingAuction.setProductName(auction.getProductName());
         existingAuction.setDescription(auction.getDescription());
         existingAuction.setStartingPrice(auction.getStartingPrice());
+        // Sync currentPrice with startingPrice for drafts (no bids yet)
+        if (existingAuction.getStatus() == AuctionStatus.DRAFT) {
+            existingAuction.setCurrentPrice(auction.getStartingPrice());
+        }
         existingAuction.setEndTime(auction.getEndTime());
         existingAuction.setImage(auction.getImage());
         existingAuction.setVisibility(auction.getVisibility());
@@ -284,6 +288,13 @@ public class AuctionService {
 
         if (matched) {
             session.setAttribute(buildPrivateAccessSessionKey(auction.getId()), Boolean.TRUE);
+            if (!privateAuctionAccessRepository.existsByUserIdAndAuctionId(userId, auction.getId())) {
+                User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+                PrivateAuctionAccess access = new PrivateAuctionAccess();
+                access.setUser(user);
+                access.setAuction(auction);
+                privateAuctionAccessRepository.save(access);
+            }
             return true;
         } else {
             counter.count.incrementAndGet();
@@ -436,13 +447,25 @@ public class AuctionService {
         LocalDateTime now = LocalDateTime.now();
         List<Auction> activeAuctions = auctionRepository.findByStatusAndEndTimeBefore(AuctionStatus.ACTIVE, now);
 
+        if (!activeAuctions.isEmpty()) {
+            logger.info("Found {} auctions to close at {}. Clock drift check: server_time={}", 
+                activeAuctions.size(), now, java.time.ZonedDateTime.now());
+        }
+
         for (Auction auction : activeAuctions) {
             try {
+                logger.info("Closing auction ID: {} (End Time: {}, Server Now: {})", 
+                    auction.getId(), auction.getEndTime(), now);
                 endAuction(auction);
             } catch (Exception e) {
                 logger.error("Error ending auction {}: {}", auction.getId(), e.getMessage(), e);
             }
         }
+    }
+
+    private String maskName(String name) {
+        if (name == null || name.length() < 2) return name;
+        return name.substring(0, 1) + "***" + name.substring(name.length() - 1);
     }
 
     @Transactional
@@ -491,11 +514,24 @@ public class AuctionService {
             logger.info("No winner to notify for auction ID: {}", auction.getId());
         }
         
-        AuctionEndNotificationMessage privateMessage = new AuctionEndNotificationMessage(
+        String realWinnerName = highestBid.map(bid -> bid.getBidder().getFullName()).orElse(null);
+        String maskedWinnerName = (realWinnerName != null && auction.getVisibility() == AuctionVisibility.PRIVATE) 
+                                ? maskName(realWinnerName) : realWinnerName;
+
+        AuctionEndNotificationMessage privateMessageReal = new AuctionEndNotificationMessage(
             auction.getId(),
             auction.getProductName(),
             highestBid.map(Bid::getAmount).orElse(auction.getStartingPrice()),
-            highestBid.map(bid -> bid.getBidder().getFullName()).orElse(null),
+            realWinnerName,
+            highestBid.map(bid -> bid.getBidder().getId()).orElse(null),
+            auction.getSeller().getId()
+        );
+
+        AuctionEndNotificationMessage privateMessageMasked = new AuctionEndNotificationMessage(
+            auction.getId(),
+            auction.getProductName(),
+            highestBid.map(Bid::getAmount).orElse(auction.getStartingPrice()),
+            maskedWinnerName,
             highestBid.map(bid -> bid.getBidder().getId()).orElse(null),
             auction.getSeller().getId()
         );
@@ -506,8 +542,22 @@ public class AuctionService {
                 .map(bid -> bid.getBidder().getEmail())
                 .forEach(recipients::add);
 
-        for (String recipient : recipients) {
-            messagingTemplate.convertAndSendToUser(recipient, "/queue/auction-end", privateMessage);
+        Long winnerId = highestBid.map(bid -> bid.getBidder().getId()).orElse(null);
+        Long sellerId = auction.getSeller().getId();
+
+        for (String recipientEmail : recipients) {
+            User recipientUser = userRepository.findByEmail(recipientEmail).orElse(null);
+            if (recipientUser == null) continue;
+
+            boolean shouldSeeRealName = (recipientUser.getId().equals(sellerId)) || 
+                                      (winnerId != null && recipientUser.getId().equals(winnerId)) ||
+                                      (recipientUser.getRole() == com.example.auctions.model.UserRole.ADMIN);
+
+            messagingTemplate.convertAndSendToUser(
+                recipientEmail, 
+                "/queue/auction-end", 
+                shouldSeeRealName ? privateMessageReal : privateMessageMasked
+            );
         }
 
         messagingTemplate.convertAndSend(

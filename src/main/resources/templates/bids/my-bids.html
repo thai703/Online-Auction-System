@@ -180,6 +180,14 @@
                 transform: translateY(-2px);
             }
 
+            .custom-pagination .btn-outline-primary:hover {
+                background: linear-gradient(135deg, #0d6efd, #00c6ff);
+                border-color: transparent;
+                color: white;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+            }
+
             .custom-pagination .page-item.active .page-link {
                 background: linear-gradient(135deg, #0d6efd, #00c6ff);
                 color: white;
@@ -190,6 +198,34 @@
                 background: #f8f9fa;
                 color: #adb5bd;
                 cursor: not-allowed;
+            }
+
+            @media (max-width: 768px) {
+                .bids-header {
+                    padding: 1.5rem 1rem;
+                    text-align: center;
+                }
+                .bid-header {
+                    padding: 1rem;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 0.75rem;
+                }
+                .bid-amount {
+                    font-size: 1.5rem;
+                }
+                .bid-body .row > div {
+                    margin-bottom: 1rem;
+                }
+                .bid-body .row > div:last-child {
+                    margin-bottom: 0;
+                }
+                .text-md-end {
+                    text-align: left !important;
+                }
+                .btn-primary.rounded-pill {
+                    width: 100%;
+                }
             }
         </style>
 
@@ -287,7 +323,7 @@
 
                 <!-- Pagination -->
                 <nav th:if="${totalPages > 1}" class="custom-pagination">
-                    <ul class="pagination justify-content-center">
+                    <ul class="pagination justify-content-center d-none d-md-flex">
                         <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
                             <a class="page-link" th:href="@{/bids/my-bids(page=${currentPage - 1})}"
                                 aria-label="Previous">
@@ -302,6 +338,23 @@
 
                         <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
                             <a class="page-link" th:href="@{/bids/my-bids(page=${currentPage + 1})}" aria-label="Next">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="pagination justify-content-center align-items-stretch d-flex d-md-none">
+                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/bids/my-bids(page=${currentPage - 1})}"
+                                aria-label="Previous page">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item disabled flex-grow-1">
+                            <span class="page-link h-100 d-flex align-items-center justify-content-center"
+                                th:text="${'Page ' + currentPage + ' / ' + totalPages}">Page 1 / 1</span>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                            <a class="page-link" th:href="@{/bids/my-bids(page=${currentPage + 1})}" aria-label="Next page">
                                 <i class="bi bi-chevron-right"></i>
                             </a>
                         </li>

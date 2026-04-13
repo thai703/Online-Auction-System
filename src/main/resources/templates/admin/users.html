@@ -246,19 +246,44 @@
       }
 
       @media (max-width: 768px) {
-        .page-header,
-        .filter-card,
-        .table-header,
+        .admin-page {
+           padding: 0 0.5rem 2.5rem;
+        }
+        .page-header {
+           padding: 1.5rem 1rem;
+           text-align: center;
+        }
+        .page-header h1 {
+           font-size: 1.75rem;
+        }
+        .filter-card {
+           padding: 1rem;
+        }
+        .table-header {
+           padding: 1rem;
+           flex-direction: column;
+           align-items: center !important;
+           text-align: center;
+        }
         .pagination-wrap {
-          padding: 1rem;
+           padding: 1rem;
         }
-
         .filter-actions {
-          justify-content: stretch;
+           flex-direction: column;
+           gap: 0.5rem;
         }
-
-        .filter-actions .btn-admin {
-          flex: 1 1 auto;
+        .btn-admin {
+           width: 100%;
+        }
+        .money-cell {
+           text-align: left;
+        }
+        .table thead th {
+           font-size: 0.7rem;
+           padding: 0.75rem 0.5rem;
+        }
+        .table tbody td {
+           padding: 0.75rem 0.5rem;
         }
       }
     </style>
@@ -313,7 +338,7 @@
         </div>
 
         <div class="table-responsive">
-          <table class="table table-hover align-middle">
+          <table class="table table-hover align-middle table-mobile-cards">
             <thead>
               <tr>
                 <th>ID</th>
@@ -326,25 +351,25 @@
             </thead>
             <tbody>
               <tr th:each="account : ${users}">
-                <td class="cell-primary numeric-cell" th:text="${account.id}">1</td>
-                <td>
+                <td data-label="ID" class="cell-primary numeric-cell" th:text="${account.id}">1</td>
+                <td data-label="Account">
                   <div class="cell-primary" th:text="${account.fullName != null && !account.fullName.isBlank() ? account.fullName : 'Unnamed user'}">User Name</div>
                   <div class="cell-secondary" th:text="${account.email != null && !account.email.isBlank() ? account.email : 'No email available'}">user@example.com</div>
                   <div class="cell-secondary" th:text="${account.phoneNumber != null && !account.phoneNumber.isBlank() ? account.phoneNumber : 'No phone number'}">0000000000</div>
                 </td>
-                <td>
+                <td data-label="Role">
                   <span class="badge-soft"
                     th:classappend="${account.role != null ? ' badge-role-' + #strings.toLowerCase(account.role.name()) : ''}"
                     th:text="${account.role != null ? account.role : 'UNKNOWN'}">ROLE</span>
                 </td>
-                <td class="money-cell"
+                <td data-label="Wallet" class="money-cell"
                   th:text="${account.balance != null ? #numbers.formatInteger(account.balance, 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">0 VNĐ</td>
-                <td>
+                <td data-label="Access">
                   <span class="badge-soft"
                     th:classappend="${account.enabled ? ' badge-status-enabled' : ' badge-status-disabled'}"
                     th:text="${account.enabled ? 'Enabled' : 'Disabled'}">Enabled</span>
                 </td>
-                <td class="text-end">
+                <td data-label="Controls" class="text-end">
                   <div class="d-inline-flex flex-wrap justify-content-end gap-2">
                   <a th:href="@{/admin/users/{id}(id=${account.id}, page=${currentPage}, keyword=${currentKeyword}, role=${currentRole}, enabled=${currentEnabled})}"
                     class="btn btn-sm btn-outline-primary btn-admin">
@@ -375,7 +400,7 @@
 
         <div class="pagination-wrap" th:if="${totalPages > 1}">
           <nav aria-label="Users pagination">
-            <ul class="pagination justify-content-center mb-0" style="gap:0.5rem;">
+            <ul class="pagination justify-content-center mb-0 d-none d-md-flex" style="gap:0.5rem;">
               <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
                 <a class="page-link" th:href="@{/admin/users(page=${currentPage - 1}, keyword=${currentKeyword}, role=${currentRole}, enabled=${currentEnabled})}">
                   <i class="bi bi-chevron-left"></i>
@@ -389,6 +414,22 @@
               </li>
               <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
                 <a class="page-link" th:href="@{/admin/users(page=${currentPage + 1}, keyword=${currentKeyword}, role=${currentRole}, enabled=${currentEnabled})}">
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </li>
+            </ul>
+            <ul class="pagination justify-content-center align-items-stretch mb-0 d-flex d-md-none" style="gap:0.5rem;">
+              <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/admin/users(page=${currentPage - 1}, keyword=${currentKeyword}, role=${currentRole}, enabled=${currentEnabled})}" aria-label="Previous page">
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+              </li>
+              <li class="page-item disabled flex-grow-1">
+                <span class="page-link h-100 d-flex align-items-center justify-content-center"
+                  th:text="${'Page ' + currentPage + ' / ' + totalPages}">Page 1 / 1</span>
+              </li>
+              <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/admin/users(page=${currentPage + 1}, keyword=${currentKeyword}, role=${currentRole}, enabled=${currentEnabled})}" aria-label="Next page">
                   <i class="bi bi-chevron-right"></i>
                 </a>
               </li>

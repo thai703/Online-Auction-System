@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -116,8 +118,16 @@ public class BidService {
         auction.setCurrentPrice(amount);
         auctionRepository.save(auction);
 
-        // Notify about new bid
-        notifyNewBid(auction.getId(), amount, bidder.getFullName());
+        // Notify AFTER transaction commits so sync fetches always see the new bid
+        final Long notifyAuctionId = auction.getId();
+        final String notifyBidderName = bidder.getFullName();
+        final Long notifyBidderId = bidder.getId();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                notifyNewBid(notifyAuctionId, amount, notifyBidderName, notifyBidderId);
+            }
+        });
 
         return savedBid;
     }
@@ -175,7 +185,16 @@ public class BidService {
         Bid savedBid = bidRepository.save(bid);
         auction.setCurrentPrice(amount);
         auctionRepository.save(auction);
-        notifyNewBid(auction.getId(), amount, bidder.getFullName());
+
+        final Long notifyAuctionId = auction.getId();
+        final String notifyBidderName = bidder.getFullName();
+        final Long notifyBidderId = bidder.getId();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                notifyNewBid(notifyAuctionId, amount, notifyBidderName, notifyBidderId);
+            }
+        });
         return savedBid;
     }
 
@@ -224,9 +243,21 @@ public class BidService {
         return bidRepository.findWonAuctionsByBidderIdPaged(userId, pageable);
     }
 
-    private void notifyNewBid(Long auctionId, BigDecimal amount, String bidderName) {
+    private String maskName(String name) {
+        if (name == null || name.length() < 2) return name;
+        return name.substring(0, 1) + "***" + name.substring(name.length() - 1);
+    }
+
+    private void notifyNewBid(Long auctionId, BigDecimal amount, String bidderName, Long bidderId) {
+        String finalName = bidderName;
+        // Check if auction is private to mask name
+        Optional<Auction> auctionOpt = auctionRepository.findById(auctionId);
+        if (auctionOpt.isPresent() && auctionOpt.get().getVisibility() == com.example.auctions.model.AuctionVisibility.PRIVATE) {
+            finalName = maskName(bidderName);
+        }
+
         String destination = "/topic/auction/" + auctionId;
-        BidMessage message = new BidMessage(amount, bidderName);
+        BidMessage message = new BidMessage(amount, finalName, bidderId);
         messagingTemplate.convertAndSend(destination, message);
     }
 
@@ -234,11 +265,13 @@ public class BidService {
     private static class BidMessage {
         private final BigDecimal amount;
         private final String bidderName;
+        private final Long bidderId;
         private final LocalDateTime timestamp;
 
-        public BidMessage(BigDecimal amount, String bidderName) {
+        public BidMessage(BigDecimal amount, String bidderName, Long bidderId) {
             this.amount = amount;
             this.bidderName = bidderName;
+            this.bidderId = bidderId;
             this.timestamp = LocalDateTime.now();
         }
 
@@ -250,6 +283,11 @@ public class BidService {
         @JsonProperty("bidderName")
         public String getBidderName() {
             return bidderName;
+        }
+
+        @JsonProperty("bidderId")
+        public Long getBidderId() {
+            return bidderId;
         }
 
         @JsonProperty("timestamp")

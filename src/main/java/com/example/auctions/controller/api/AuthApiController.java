@@ -22,6 +22,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -96,6 +98,64 @@ public class AuthApiController {
         } catch (RuntimeException e) {
             // Generic response to prevent email enumeration
             return ResponseEntity.ok(ApiResponse.ok("If an account exists and is unverified, a new code has been sent."));
+        }
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<ApiResponse<JwtResponse>> googleLogin(@RequestBody Map<String, String> body) {
+        String idToken = body.get("idToken");
+        if (idToken == null || idToken.isBlank()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Missing Google ID token."));
+        }
+
+        try {
+            // Verify the Google ID token via Google's tokeninfo endpoint
+            var restTemplate = new org.springframework.web.client.RestTemplate();
+            var tokenInfo = restTemplate.getForObject(
+                    "https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken, Map.class);
+
+            if (tokenInfo == null || tokenInfo.get("email") == null) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("Invalid Google token."));
+            }
+
+            String email = tokenInfo.get("email").toString();
+            String googleId = tokenInfo.get("sub").toString();
+            String displayName = tokenInfo.get("name") != null ? tokenInfo.get("name").toString() : email;
+
+            // Find existing user by googleId or email
+            Optional<User> existingUser = userService.findByGoogleId(googleId)
+                    .or(() -> userService.findByEmail(email));
+
+            User user;
+            if (existingUser.isPresent()) {
+                user = existingUser.get();
+                if (!user.isEnabled()) {
+                    return ResponseEntity.badRequest().body(ApiResponse.error("Account is disabled."));
+                }
+                // Link Google account if not already linked
+                user = userService.linkGoogleAccount(user, googleId, displayName);
+
+                if (!userService.isProfileComplete(user)) {
+                    return ResponseEntity.badRequest().body(ApiResponse.error(
+                            "Profile incomplete. Please complete onboarding on the web first."));
+                }
+            } else {
+                // No existing account — tell user to register on web first
+                return ResponseEntity.badRequest().body(ApiResponse.error(
+                        "No account found. Please register on the website first using Google login."));
+            }
+
+            // Generate JWT
+            String jwt = jwtTokenProvider.generateTokenForUser(user);
+            List<String> roles = user.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(ApiResponse.ok("Google login successful",
+                    new JwtResponse(jwt, user.getEmail(), user.getFullName(), roles)));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Google authentication failed: " + e.getMessage()));
         }
     }
 

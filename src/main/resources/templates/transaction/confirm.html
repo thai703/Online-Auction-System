@@ -209,10 +209,38 @@
             }
 
             @media (max-width: 640px) {
-                .confirm-body { padding: 2rem; }
-                .confirm-footer { padding: 0 2rem 2rem; }
-                .detail-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-                .detail-value { align-self: flex-end; }
+                .confirm-header {
+                    padding: 2rem 1rem;
+                }
+                .confirm-header h2 {
+                    font-size: 1.5rem;
+                }
+                .confirm-body { 
+                    padding: 1.5rem; 
+                }
+                .summary-section {
+                    padding: 1.25rem;
+                }
+                .confirm-footer { 
+                    padding: 0 1.5rem 2rem; 
+                    flex-direction: column;
+                }
+                .btn-confirm {
+                    width: 100%;
+                    padding: 0.85rem;
+                }
+                .detail-row { 
+                    flex-direction: column; 
+                    align-items: flex-start; 
+                    gap: 0.35rem; 
+                }
+                .detail-value { 
+                    align-self: flex-start; 
+                    padding-left: 2rem;
+                }
+                .amount-highlight {
+                    font-size: 1.5rem;
+                }
             }
         </style>
 

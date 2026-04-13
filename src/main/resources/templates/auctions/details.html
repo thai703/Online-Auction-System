@@ -243,6 +243,14 @@
         margin-top: 2rem;
       }
 
+      .auction-topbar {
+        gap: 1rem;
+      }
+
+      .owner-actions {
+        flex-wrap: wrap;
+      }
+
       .btn-auction {
         border-radius: 10px;
         padding: 1rem 2rem;
@@ -279,6 +287,51 @@
         border-radius: 12px;
         min-height: 48px;
       }
+
+      @media (max-width: 768px) {
+        .auction-details {
+          padding: 1rem;
+          border-radius: 15px;
+        }
+        .auction-info {
+          padding: 1.5rem;
+        }
+        .auction-price {
+          font-size: 1.5rem;
+          margin-bottom: 1rem;
+        }
+        .countdown {
+          padding: 1rem;
+        }
+        .countdown-time {
+          gap: 0.5rem;
+        }
+        .countdown-item {
+          min-width: 65px;
+          padding: 0.75rem 0.5rem;
+        }
+        .countdown-number {
+          font-size: 1.5rem;
+        }
+        .countdown-label {
+          font-size: 0.65rem;
+        }
+        .h2 {
+           font-size: 1.5rem;
+        }
+        .auction-topbar {
+          flex-direction: column;
+          align-items: stretch !important;
+        }
+        .owner-actions,
+        .owner-actions form {
+          width: 100%;
+        }
+        .owner-actions > .btn,
+        .owner-actions form .btn {
+          width: 100%;
+        }
+      }
     </style>
 
     <div class="auction-details">
@@ -307,7 +360,7 @@
           <div class="col-md-6">
             <div class="auction-info">
               <!-- Status and Actions Row -->
-              <div class="d-flex justify-content-between align-items-start mb-4">
+              <div class="auction-topbar d-flex justify-content-between align-items-start mb-4">
                 <div class="d-flex gap-2 flex-wrap">
                   <span th:class="'auction-status ' + 'status-' + ${#strings.toLowerCase(auction.status)}"
                     th:text="${auction.status}">Status</span>
@@ -318,7 +371,7 @@
                 </div>
 
                 <!-- Action Buttons for Owner -->
-                <div th:if="${isOwner}" class="d-flex gap-2">
+                <div th:if="${isOwner}" class="owner-actions d-flex gap-2">
                   <a th:if="${auction.status.name() == 'DRAFT'}" th:href="@{'/auctions/edit/' + ${auction.id}}"
                     class="btn btn-primary btn-sm"> <i class="bi bi-pencil me-1"></i>Edit </a>
                   <form th:action="@{'/auctions/delete/' + ${auction.id}}" method="post" style="display: inline"
@@ -571,8 +624,11 @@
       (function () {
         const auctionId = /*[[${auction.id}]]*/ null;
         const currentUserId = /*[[${#authentication.principal.id}]]*/ null;
-        const socket = new SockJS('/ws');
-        const stompClient = Stomp.over(socket);
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const wsUrl = wsProtocol + window.location.host + '/ws/raw';
+        const stompClient = Stomp.client(wsUrl);
+        stompClient.heartbeat.outgoing = 10000;
+        stompClient.heartbeat.incoming = 10000;
         stompClient.debug = null;
         let auctionEndReloadTimer = null;
         let auctionEndHandled = false;

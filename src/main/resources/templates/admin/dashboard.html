@@ -204,12 +204,53 @@
 
       @media (max-width: 768px) {
         .admin-header {
-          padding: 2rem;
+          padding: 1.5rem;
+          text-align: center;
+        }
+        
+        .admin-header h1 {
+          font-size: 1.75rem;
         }
 
-        .stats-card,
-        .panel-card {
-          padding: 1.25rem;
+        .quick-actions {
+          justify-content: center;
+        }
+
+        .btn-admin, .btn-admin-outline {
+          width: 100%;
+        }
+
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+        }
+
+        .stats-card {
+          padding: 1rem;
+        }
+
+        .stats-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 1.25rem;
+        }
+
+        .stats-value {
+          font-size: 1.25rem;
+        }
+
+        .stats-label {
+          font-size: 0.8rem;
+        }
+
+        .panel-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .stats-grid {
+          grid-template-columns: 1fr;
         }
       }
     </style>

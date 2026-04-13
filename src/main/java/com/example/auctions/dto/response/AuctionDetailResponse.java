@@ -20,6 +20,8 @@ public record AuctionDetailResponse(
         String visibility,
         Long sellerId,
         String sellerName,
+        String sellerEmail,
+        String sellerPhone,
         Long winnerId,
         String winnerName,
         int bidCount,
@@ -35,7 +37,23 @@ public record AuctionDetailResponse(
         List<BidResponse> bidResponses = bids != null
                 ? bids.stream().map(BidResponse::from).toList()
                 : List.of();
+        return fromBidResponses(auction, bidResponses, privateAccessRequired, isOwner, unlockAttemptsRemaining);
+    }
 
+    public static AuctionDetailResponse fromBidResponses(Auction auction, List<BidResponse> bidResponses,
+                                                         boolean privateAccessRequired,
+                                                         boolean isOwner,
+                                                         int unlockAttemptsRemaining) {
+        String winnerName = auction.getWinnerNameSnapshot() != null ? auction.getWinnerNameSnapshot()
+                : (auction.getWinner() != null ? auction.getWinner().getFullName() : null);
+        return fromBidResponses(auction, bidResponses, privateAccessRequired, isOwner, unlockAttemptsRemaining, winnerName);
+    }
+
+    public static AuctionDetailResponse fromBidResponses(Auction auction, List<BidResponse> bidResponses,
+                                                         boolean privateAccessRequired,
+                                                         boolean isOwner,
+                                                         int unlockAttemptsRemaining,
+                                                         String resolvedWinnerName) {
         return new AuctionDetailResponse(
                 auction.getId(),
                 auction.getProductName(),
@@ -50,9 +68,10 @@ public record AuctionDetailResponse(
                 auction.getSeller() != null ? auction.getSeller().getId() : null,
                 auction.getSellerNameSnapshot() != null ? auction.getSellerNameSnapshot()
                         : (auction.getSeller() != null ? auction.getSeller().getFullName() : null),
+                auction.getSeller() != null ? auction.getSeller().getEmail() : null,
+                auction.getSeller() != null ? auction.getSeller().getPhoneNumber() : null,
                 auction.getWinner() != null ? auction.getWinner().getId() : null,
-                auction.getWinnerNameSnapshot() != null ? auction.getWinnerNameSnapshot()
-                        : (auction.getWinner() != null ? auction.getWinner().getFullName() : null),
+                resolvedWinnerName,
                 bidResponses.size(),
                 bidResponses,
                 privateAccessRequired,
