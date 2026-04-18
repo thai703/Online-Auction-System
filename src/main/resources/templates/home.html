@@ -4,6 +4,7 @@
 
 <head>
   <title>Welcome to Auctions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -12,9 +13,10 @@
       .hero-section {
         background: linear-gradient(135deg, #0d6efd10 0%, #0099ff05 100%);
         border-radius: 0 0 80px 80px;
-        padding: 8rem 0;
+        padding: 8rem 3;
         position: relative;
         overflow: hidden;
+        font-family: 'Inter', sans-serif;
       }
 
       .hero-image-container {
@@ -71,11 +73,12 @@
       .hero-title {
         font-size: 4rem;
         font-weight: 800;
-        background: linear-gradient(45deg, #0d6efd, #00c6ff);
+        background: linear-gradient(45deg, #0072ff, #00c6ff);
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 1.5rem;
+        letter-spacing: -1px;
         animation: fadeInUp 1s ease;
       }
 
@@ -224,35 +227,66 @@
       }
 
       .btn-hero {
-        padding: 1rem 2.5rem;
+        padding: 0.8rem 2rem;
         font-weight: 600;
-        border-radius: 15px;
-        transition: all 0.3s ease;
+        border-radius: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .btn-hero.btn-primary {
-        background: linear-gradient(135deg, #0d6efd 0%, #00c6ff 100%);
+        background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
         border: none;
-        box-shadow: 0 10px 20px rgba(13, 110, 253, 0.2);
+        box-shadow: 0 10px 20px rgba(0, 114, 255, 0.2);
+        color: white;
       }
 
       .btn-hero.btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 15px 30px rgba(13, 110, 253, 0.3);
+        box-shadow: 0 15px 30px rgba(0, 114, 255, 0.3);
+        color: white;
       }
 
       .btn-hero.btn-outline-primary {
-        border: 2px solid #0d6efd;
+        border: 2px solid #0072ff;
         background: transparent;
+        color: #0072ff;
       }
 
       .btn-hero.btn-outline-primary:hover {
-        background: linear-gradient(135deg, #0d6efd 0%, #00c6ff 100%);
-        border-color: transparent;
-        color: white;
+        background: rgba(0, 114, 255, 0.05);
+        color: #0072ff;
         transform: translateY(-2px);
+      }
+
+      .btn-android {
+        background: #0062E6;
+        /* Màu xanh đậm như trong ảnh */
+        color: white;
+        border-radius: 50px;
+        /* Hình viên thuốc */
+        padding: 0.7rem 1.8rem;
+        text-transform: none;
+        /* Giữ chữ hoa thường */
+        font-weight: 500;
+        box-shadow: 0 4px 15px rgba(0, 98, 230, 0.25);
+        border: none;
+        transition: all 0.3s ease;
+      }
+
+      .btn-android:hover {
+        background: #004fb9;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 98, 230, 0.35);
+        color: white;
+      }
+
+      .btn-android i {
+        font-size: 1.25rem;
       }
 
       .testimonial-card {
@@ -335,23 +369,21 @@
             <h1 class="hero-title">Discover Amazing Auctions</h1>
             <p class="hero-subtitle">Join our thriving marketplace where unique items find their perfect match.
               Experience the thrill of bidding and selling in a secure, modern platform.</p>
-            <div class="d-grid gap-3 d-md-flex justify-content-center justify-content-lg-start">
+            <div class="d-grid gap-2 d-md-flex justify-content-center justify-content-lg-start mb-3">
               <a sec:authorize="!isAuthenticated()" href="/register" class="btn btn-hero btn-primary w-100 w-md-auto">
-                <i class="bi bi-person-plus me-2"></i>Get Started
+                <i class="bi bi-person-plus me-2"></i>GET STARTED
               </a>
-              <a sec:authorize="!isAuthenticated()" href="/login" class="btn btn-hero btn-outline-primary w-100 w-md-auto">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+              <a sec:authorize="!isAuthenticated()" href="/login"
+                class="btn btn-hero btn-outline-primary w-100 w-md-auto">
+                <i class="bi bi-box-arrow-in-right me-2"></i>SIGN IN
               </a>
               <a sec:authorize="isAuthenticated()" href="/dashboard" class="btn btn-hero btn-primary w-100 w-md-auto">
-                <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+                <i class="bi bi-speedometer2 me-2"></i>DASHBOARD
               </a>
             </div>
-            
-            <!-- Mobile App Section -->
-            <div class="mt-4 pt-4 border-top text-center text-lg-start" style="border-color: rgba(0,0,0,0.05) !important;">
-              <p class="text-muted mb-3 fw-bold" style="font-size: 0.95rem;"><i class="bi bi-phone me-1"></i> ALSO AVAILABLE ON MOBILE</p>
-              <a href="/downloads/auction-app.apk" download="Auction-App.apk" class="btn btn-hero btn-outline-success w-100 w-md-auto" style="border-width: 2px;">
-                <i class="bi bi-android2 me-2 fs-5"></i>Download Android App
+            <div class="text-center text-lg-start">
+              <a href="/downloads/auction-app.apk" download="Auction-App.apk" class="btn btn-android w-100 w-md-auto">
+                <i class="bi bi-android2 me-2"></i>Get Android App
               </a>
             </div>
           </div>
